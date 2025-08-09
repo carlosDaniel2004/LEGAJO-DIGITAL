@@ -1,0 +1,29 @@
+/* Estilo para el contenedor principal del dashboard. */
+#wrapper {
+    display: flex;
+}
+/* Estilo para la barra lateral. Se oculta por defecto en pantallas pequeñas. */
+#sidebar-wrapper {
+    min-height: 100vh;
+    width: 250px;
+    margin-left: -250px;
+    transition: margin .25s ease-out;
+}
+/* Clase 'toggled' que se añade con JS para mostrar la barra lateral. */
+#wrapper.toggled #sidebar-wrapper {
+    margin-left: 0;
+}
+/* Estilo para el contenedor del contenido de la página. */
+#page-content-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+/* Media query para que la barra lateral sea visible por defecto en pantallas grandes. */
+@media (min-width: 768px) {
+    #sidebar-wrapper {
+        margin-left: 0;
+    }
+    #wrapper.toggled #sidebar-wrapper {
+        margin-left: -250px;
+    }
+} 

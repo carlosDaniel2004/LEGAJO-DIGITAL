@@ -1,0 +1,19 @@
+{# Este componente renderiza una notificación (toast) de Bootstrap. #}
+{# Se usa para mostrar los mensajes 'flashed' de Flask. #}
+<div class="toast align-items-center text-white bg-{{ category }} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="d-flex">
+        <div class="toast-body">
+            {% if category == 'success' %}
+                <i class="bi bi-check-circle-fill me-2"></i>
+            {% elif category == 'danger' %}
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {% elif category == 'warning' %}
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            {% else %}
+                <i class="bi bi-info-circle-fill me-2"></i>
+            {% endif %}
+            {{ message }}
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+</div> 

@@ -1,0 +1,17 @@
+{# Define una macro de Jinja2 para renderizar campos de formulario de forma consistente. #}
+{% macro render_field(field) %}
+  <div class="mb-3">
+    {{ field.label(class="form-label") }}
+    {# Añade la clase 'is-invalid' de Bootstrap si el campo tiene errores de validación. #}
+    {% if field.errors %}
+      {{ field(class="form-control is-invalid", **kwargs) }}
+      <div class="invalid-feedback">
+        {% for error in field.errors %}
+          <span>{{ error }}</span>
+        {% endfor %}
+      </div>
+    {% else %}
+      {{ field(class="form-control", **kwargs) }}
+    {% endif %}
+  </div>
+{% endmacro %} 

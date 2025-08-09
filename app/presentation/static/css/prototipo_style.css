@@ -1,0 +1,460 @@
+/* legajo_digital_diresa/app/presentation/static/css/prototipo_style.css */
+
+:root {
+    --color-primario-gob: #335a9a; /* Azul institucional */
+    --color-fondo-gris: #f0f0f0;
+    --color-texto-principal: #333;
+    --color-gris-oscuro: #5a5a5a;
+    --color-rojo-minsa: #E31D1A;
+    --color-sidebar-bg: #444444; /* Gris más oscuro para sidebar */
+    --color-sidebar-hover: #555555; /* Un poco más claro al pasar el ratón */
+    --color-header-bg: #FFFFFF;
+    --color-header-border: #E31D1A; /* Rojo de MINSA */
+}
+
+body {
+    background-color: var(--color-fondo-gris);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--color-texto-principal);
+}
+
+/* -------------------------------------- */
+/* Estilos para el Layout del Dashboard   */
+/* -------------------------------------- */
+#wrapper {
+    display: flex;
+}
+
+.prototipo-sidebar {
+    min-width: 280px; /* Ancho fijo para el sidebar */
+    max-width: 280px;
+    background-color: var(--color-sidebar-bg);
+    color: white;
+    min-height: 100vh;
+    transition: margin .25s ease-out; /* Para la animación de toggle */
+    margin-left: 0; /* Por defecto visible en desktop */
+}
+
+/* Cuando se 'toglea', oculta el sidebar */
+#wrapper.toggled .prototipo-sidebar {
+    margin-left: -280px;
+}
+
+.prototipo-sidebar .sidebar-user-info {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.prototipo-sidebar .sidebar-user-info .user-name {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin-bottom: 5px;
+    color: white;
+}
+
+.prototipo-sidebar .sidebar-user-info .last-login {
+    font-size: 0.8em;
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+.prototipo-sidebar .sidebar-user-info .profile-circle {
+    width: 90px;
+    height: 90px;
+    background-color: #666; /* Color de fondo del círculo */
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid white;
+}
+
+.prototipo-sidebar .sidebar-user-info .profile-circle i {
+    font-size: 3.5em; /* Tamaño del icono de persona */
+    color: white;
+}
+
+.prototipo-sidebar .sidebar-menu .menu-heading {
+    padding: 10px 20px;
+    font-size: 0.9em;
+    color: #bbb;
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+.prototipo-sidebar .list-group-item {
+    background-color: var(--color-sidebar-bg);
+    color: white;
+    border: none;
+    padding: 15px 20px;
+    font-size: 1.0em;
+    display: flex;
+    align-items: center;
+    border-radius: 0; /* Asegura que no haya bordes redondeados */
+}
+
+.prototipo-sidebar .list-group-item:hover,
+.prototipo-sidebar .list-group-item.active {
+    background-color: var(--color-sidebar-hover);
+    color: white;
+    border-left: 5px solid var(--color-primario-gob); /* Barra azul activa */
+    padding-left: 15px; /* Compensa la barra para mantener el padding */
+}
+
+.prototipo-sidebar .list-group-item i {
+    margin-right: 15px;
+    font-size: 1.2em;
+}
+
+#page-content-wrapper {
+    flex-grow: 1;
+    min-width: 0;
+    background-color: var(--color-fondo-gris);
+}
+
+.prototipo-main-content {
+    padding: 2rem;
+}
+
+/* Media query para responsive */
+@media (min-width: 768px) {
+    .prototipo-sidebar {
+        margin-left: 0; /* Sidebar visible por defecto en pantallas grandes */
+    }
+    #wrapper.toggled .prototipo-sidebar {
+        margin-left: -280px; /* Oculta sidebar al toggle en desktop */
+    }
+    #sidebarToggle {
+        display: none; /* Oculta el botón de hamburguesa en desktop */
+    }
+}
+
+/* -------------------------------------- */
+/* Estilos para la Cabecera (Header)    */
+/* -------------------------------------- */
+.prototipo-header {
+    background-color: var(--color-header-bg);
+    padding: 1rem 2rem; /* Más padding horizontal */
+    border-bottom: 2px solid var(--color-header-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Sombra suave */
+    position: sticky; /* Sticky header */
+    top: 0;
+    z-index: 1000;
+}
+
+.prototipo-header #sidebarToggle {
+    background-color: transparent;
+    border: none;
+    color: var(--color-texto-principal);
+    font-size: 1.5em;
+    padding: 0;
+    margin-right: 15px; /* Espacio a la derecha del botón */
+}
+
+.prototipo-header .header-center-logos {
+    display: flex;
+    align-items: center;
+    flex-grow: 1; /* Permite que ocupe el espacio central */
+    justify-content: last baseline; /* Centra los logos */
+    margin-right: 50px; /* Ajuste para mover el grupo ligeramente a la izquierda */
+}
+
+.prototipo-header .diresa-brand-header,
+.prototipo-header .minsa-brand-header {
+    display: flex;
+    align-items: center;
+    color: var(--color-texto-principal);
+}
+
+/* Tamaño independiente para el logo de DIRESA en la cabecera */
+.prototipo-header .diresa-brand-header img {
+    max-height: 80px; /* Tamaño más grande para este logo */
+    width: auto;
+}
+
+/* Tamaño independiente para el logo del Ministerio de Salud en la cabecera */
+.prototipo-header .minsa-brand-header img {
+    max-height: 80px; /* Tamaño un poco más grande para este logo */
+    width: auto;
+}
+
+.prototipo-header .diresa-brand-header {
+    margin-right: 420px; /* Espacio entre los dos bloques de logos */
+}
+
+.prototipo-header .diresa-text-header,
+.prototipo-header .minsa-brand-header h4,
+.prototipo-header .minsa-brand-header p {
+    margin-left: 100px;
+}
+
+.prototipo-header .minsa-brand-header h4 {
+    color: var(--color-rojo-minsa); /* Color de "PERÚ" */
+    margin-bottom: 0;
+}
+.prototipo-header .minsa-brand-header p {
+    font-size: 0.8em;
+    margin-bottom: 0;
+}
+
+.prototipo-header .header-right-icons {
+    display: flex;
+    align-items: center;
+}
+
+.prototipo-header .notification-bell {
+    position: relative;
+    margin-right: 20px;
+    font-size: 3.2em;
+    color: var(--color-texto-principal);
+}
+
+.prototipo-header .notification-bell .badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 0.6em;
+    padding: .35em .6em;
+}
+
+.prototipo-header .user-icon-header {
+    font-size: 3.8em;
+    color: var(--color-texto-principal);
+}
+
+/* -------------------------------------- */
+/* Estilos para Títulos del Dashboard   */
+/* -------------------------------------- */
+.dashboard-header-titles .section-title {
+    font-size: 1.8em;
+    font-weight: bold;
+    color: #444;
+    margin-bottom: 5px;
+}
+
+.dashboard-header-titles .subsection-title {
+    font-size: 1.4em;
+    color: #666;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+/* -------------------------------------- */
+/* Estilos para las Tarjetas (Cards)    */
+/* -------------------------------------- */
+.dashboard-card {
+    background-color: white;
+    border: none; /* Eliminado el borde izquierdo azul */
+    padding: 25px;
+    text-align: center;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: var(--color-texto-principal);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 180px; /* Altura mínima para uniformidad */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); /* Sombra para efecto 3D */
+    border-radius: 8px; /* Bordes redondeados */
+}
+
+.dashboard-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* Sombra más fuerte al hover */
+    color: var(--color-primario-gob); /* Color azul al hover */
+}
+
+.dashboard-card .card-icon {
+    position: relative;
+    width: 80px; /* Tamaño del área del icono */
+    height: 80px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 3.5em; /* Tamaño base para iconos principales */
+    color: var(--color-primario-gob); /* Color azul para los iconos */
+}
+
+/* Ajustes para iconos superpuestos */
+.dashboard-card .card-overlay-icon-sm {
+    position: absolute;
+    font-size: 0.5em; /* Tamaño más pequeño para el icono de superposición */
+    color: white; /* Color para el icono superpuesto */
+    background-color: var(--color-primario-gob); /* Fondo para el icono superpuesto */
+    border-radius: 50%;
+    padding: 0.1em;
+    line-height: 1; /* Ajuste para centrar el icono */
+    top: 55%; /* Posición vertical */
+    left: 55%; /* Posición horizontal */
+}
+
+.dashboard-card .card-overlay-icon-md {
+    position: absolute;
+    font-size: 0.7em; /* Tamaño medio para el icono de superposición */
+    color: white;
+    background-color: var(--color-primario-gob);
+    border-radius: 50%;
+    padding: 0.1em;
+    line-height: 1;
+    top: 40%;
+    left: 40%;
+}
+
+
+.dashboard-card h4 {
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+.dashboard-card .ingresar-link {
+    border-top: 1px dashed #ccc;
+    padding-top: 10px;
+    margin-top: 10px;
+    font-weight: bold;
+    color: var(--color-primario-gob); /* Enlace azul */
+    font-size: 0.9em;
+}
+
+/* -------------------------------------- */
+/* Estilos para la página de Login (se mantienen y se consolidan) */
+/* -------------------------------------- */
+.login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    background-color: var(--color-gris-oscuro);
+    /* Asegúrate de que esta ruta sea correcta para tu imagen de fondo del login */
+    background-image: url('../img/diresa_fondo.jpg'); /* Usando background_institution.jpg como se estableció previamente */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+    padding: 20px;
+    overflow: hidden;
+}
+
+.login-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.login-box {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 40px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 0 25px rgba(0,0,0,0.3);
+    z-index: 2;
+    position: relative;
+}
+
+.login-box .form-control {
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.login-box .btn-primary {
+    background-color: var(--color-primario-gob);
+    border-color: var(--color-primario-gob);
+    padding: 12px;
+    width: 100%;
+    font-size: 1.1em;
+}
+
+.login-header-logos {
+    position: absolute;
+    top: 20px; /* Vuelto a 20px para la cabecera de login, como en el prototipo inicial */
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 20px; /* Vuelto a 20px para la cabecera de login */
+    z-index: 2;
+}
+
+.login-header-logos img {
+    max-height: 100px; /* Se mantiene 100px para los logos de la cabecera de login */
+    width: auto;
+}
+
+.login-header-logos .diresa-brand,
+.login-header-logos .minsa-brand {
+    display: flex;
+    align-items: center;
+    color: white;
+}
+
+.login-header-logos .diresa-brand img {
+    margin-right: 10px;
+}
+
+.login-header-logos .minsa-brand img {
+    margin-left: 10px;
+}
+
+.login-header-logos .diresa-brand h4,
+.login-header-logos .minsa-brand h4 {
+    font-weight: bold;
+    margin-bottom: 0;
+    line-height: 1.2;
+}
+
+.login-header-logos .minsa-brand h4 {
+    color: var(--color-rojo-minsa);
+}
+
+.login-header-logos .diresa-brand p,
+.login-header-logos .minsa-brand p {
+    font-size: 0.9em;
+    margin-bottom: 0;
+    line-height: 1.2;
+}
+
+.login-logo-diresa {
+    max-width: 320px; /* Tamaño del logo principal de DIRESA en la caja de login */
+    margin-bottom: 15px;
+}
+
+.captcha-box {
+    background-color: #e9e9e9;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.captcha-img {
+    height: 40px;
+    width: auto;
+    border: 1px solid #ddd;
+    background-color: #fff;
+    flex-grow: 1;
+    margin-right: 10px;
+    object-fit: contain;
+}

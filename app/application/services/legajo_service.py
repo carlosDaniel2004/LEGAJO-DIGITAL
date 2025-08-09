@@ -1,0 +1,163 @@
+# Importa la librería para calcular hashes de archivos.
+import hashlib
+from openpyxl import Workbook
+from openpyxl.styles import Font, Alignment, PatternFill
+from openpyxl.utils import get_column_letter
+import io
+# Define el servicio que contiene la lógica de negocio para los legajos.
+class LegajoService:
+    # El constructor inyecta las dependencias del repositorio de personal y el servicio de auditoría.
+    def __init__(self, personal_repository, audit_service):
+        self._personal_repo = personal_repository
+        self._audit_service = audit_service
+
+    def get_tipos_documento_for_seccion(self, id_seccion):
+        """Orquesta la obtención de tipos de documento filtrados por sección."""
+        return self._personal_repo.find_tipos_documento_by_seccion(id_seccion)
+
+    def get_document_for_download(self, document_id):
+        """
+        Recupera un documento de la base de datos y lo prepara para la descarga.
+        """
+        document_row = self._personal_repo.find_document_by_id(document_id)
+        if not document_row:
+            return None
+        
+        # El SP devuelve una fila con (nombre_archivo, archivo_binario)
+        return {
+            "filename": document_row[0],
+            "data": document_row[1]
+        }
+
+    # Lógica para obtener una lista paginada y filtrada de personal.
+    def get_all_personal_paginated(self, page, per_page, filters=None):
+        return self._personal_repo.get_all_paginated(page, per_page, filters)
+
+    # Lógica para registrar un nuevo empleado.
+    def register_new_personal(self, form_data, creating_user_id):
+        new_personal_id = self._personal_repo.create(form_data)
+        self._audit_service.log(creating_user_id, 'Personal', 'CREAR', f"Se creó el legajo para el DNI {form_data['dni']}", form_data)
+        return new_personal_id
+
+    # Lógica para obtener los detalles de un solo empleado.
+    def get_personal_details(self, personal_id):
+        return self._personal_repo.find_by_id(personal_id)
+
+    # Lógica para obtener los documentos de un empleado.
+    def get_documents_by_personal_id(self, personal_id):
+        return self._personal_repo.find_documents_by_personal_id(personal_id)
+
+    # Lógica para subir un documento al legajo.
+    def upload_document_to_personal(self, form_data, file_storage, current_user_id):
+        if not file_storage or not file_storage.filename:
+            raise ValueError("No se proporcionó ningún archivo para subir.")
+
+        file_bytes = file_storage.read()
+        file_hash = hashlib.sha256(file_bytes).hexdigest()
+        
+        doc_data = form_data.copy()
+        doc_data['nombre_archivo'] = file_storage.filename
+        doc_data['hash_archivo'] = file_hash
+        id_personal = doc_data.get('id_personal')
+
+        self._personal_repo.add_document(doc_data, file_bytes)
+        self._audit_service.log(current_user_id, 'Documentos', 'SUBIR', f"Subió '{file_storage.filename}' al personal ID {id_personal}")
+
+    def get_personal_details(self, personal_id):
+        return self._personal_repo.get_full_legajo_by_id(personal_id)
+
+    # Métodos para poblar los formularios SelectField.
+    def get_unidades_for_select(self):
+        return self._personal_repo.get_unidades_for_select()
+
+    def get_secciones_for_select(self):
+        return self._personal_repo.get_secciones_for_select()
+
+    def get_tipos_documento_for_select(self):
+        return self._personal_repo.get_tipos_documento_for_select()
+    
+
+    def generate_general_report_excel(self):
+        # Obtiene los datos crudos desde el repositorio.
+        personal_data = self._personal_repo.get_all_for_report()
+
+        # Crea un nuevo libro de trabajo de Excel.
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Reporte General de Personal"
+
+        # Define las cabeceras de las columnas.
+        headers = [
+            "DNI", "Apellidos", "Nombres", "Sexo", "Fecha de Nacimiento", "Email",
+            "Teléfono", "Unidad Administrativa", "Fecha de Ingreso", "Estado",
+            "Último Cargo", "Último Tipo de Contrato", "Modalidad", "Sueldo", "Resolución"
+        ]
+        ws.append(headers)
+
+        # Aplica estilo a las cabeceras.
+        header_font = Font(bold=True, color="FFFFFF")
+        header_fill = PatternFill(start_color="0D47A1", end_color="0D47A1", fill_type="solid")
+        for cell in ws[1]:
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        # Escribe los datos de cada persona en una fila.
+        for persona in personal_data:
+            row_data = [
+                persona.get('dni'), persona.get('apellidos'), persona.get('nombres'),
+                persona.get('sexo'), persona.get('fecha_nacimiento'), persona.get('email'),
+                persona.get('telefono'), persona.get('nombre_unidad'),
+                persona.get('fecha_ingreso'), 'Activo' if persona.get('activo') else 'Inactivo',
+                persona.get('cargo'), persona.get('tipo_contrato'), persona.get('modalidad'),
+                persona.get('sueldo'), persona.get('resolucion')
+            ]
+            ws.append(row_data)
+
+        # Autoajusta el ancho de las columnas.
+        for column_cells in ws.columns:
+            length = max(len(str(cell.value or "")) for cell in column_cells)
+            ws.column_dimensions[get_column_letter(column_cells[0].column)].width = length + 2
+
+        # Guarda el libro de trabajo en un flujo de bytes en memoria.
+        excel_stream = io.BytesIO()
+        wb.save(excel_stream)
+        excel_stream.seek(0)
+        
+        return excel_stream
+    
+    def delete_personal_by_id(self, personal_id, deleting_user_id):
+        # Primero, se obtiene la información del empleado para la auditoría.
+        persona = self.get_personal_details(personal_id)
+        if not persona:
+            raise ValueError("La persona que intenta eliminar no existe.")
+
+        # Se llama al repositorio para ejecutar la desactivación en la BD.
+        self._personal_repo.delete_by_id(personal_id)
+        # Se registra la acción en la bitácora.
+        self._audit_service.log(
+            deleting_user_id,
+            'Personal',
+            'ELIMINAR (Desactivar)',
+            f"Se desactivó el legajo del personal con DNI {persona.dni}"
+        )
+    
+    # ---MÉTODO para obtener tipos de documento filtrados por sección ---
+    def get_tipos_documento_by_seccion(self, seccion_id):
+        return self._personal_repo.get_tipos_documento_by_seccion(seccion_id)
+
+
+
+    def delete_document_by_id(self, document_id, deleting_user_id):
+        """
+        Orquesta la eliminación lógica de un documento y registra la acción en la auditoría.
+        """
+        
+        self._personal_repo.delete_document_by_id(document_id)
+        
+        self._audit_service.log(
+            deleting_user_id,
+            'Documentos',
+            'ELIMINAR (Lógico)',
+            f"Se marcó como eliminado el documento con ID {document_id}"
+        )    

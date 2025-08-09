@@ -1,0 +1,112 @@
+{% extends 'layouts/base.html' %}
+
+{% block body_content %}
+<div class="d-flex" id="wrapper"> {# Añadido id="wrapper" para el toggle del menú #}
+    <div class="prototipo-sidebar d-flex flex-column">
+        <div class="sidebar-user-info">
+            <h5 class="user-name">ANGELO CUEVA CONDOR</h5> {# Placeholder de nombre de usuario. Considera usar {{ current_user.nombre_completo or current_user.username }} #}
+            {% if current_user.fecha_ultimo_login %}
+            <div class="last-login">
+                Última sesión a las: {{ current_user.fecha_ultimo_login.strftime('%H:%M %d/%m/%Y') }}
+            </div>
+            {% endif %}
+            <div class="profile-circle">
+                <i class="bi bi-person-fill"></i>
+            </div>
+        </div>
+
+        <div class="sidebar-menu list-group list-group-flush flex-grow-1">
+            {# Los enlaces del menú lateral #}
+            <div class="menu-heading">Opciones</div>
+            <a href="{{ url_for('index') }}" class="list-group-item {% if request.endpoint == 'main_dashboard' %}active{% endif %}">
+                <i class="bi bi-house-door-fill"></i>Inicio
+            </a>
+            
+            {% if current_user.rol in ['AdministradorLegajos', 'RRHH'] %}
+            <a href="{{ url_for('legajo.crear_personal') }}" class="list-group-item {% if request.endpoint == 'legajo.crear_personal' %}active{% endif %}">
+                <i class="bi bi-folder-plus"></i>Nuevo Legajo
+            </a>
+            <a href="{{ url_for('legajo.listar_personal') }}" class="list-group-item {% if request.endpoint == 'legajo.listar_personal' %}active{% endif %}">
+                <i class="bi bi-search"></i>Consultar Legajo
+            </a>
+            <a href="{{ url_for('legajo.listar_personal') }}" class="list-group-item {% if request.endpoint == 'legajo.editar_personal' %}active{% endif %}">
+                <i class="bi bi-folder-symlink"></i>Actualizar Legajo
+            </a>
+            {% endif %}
+
+            {% if current_user.rol == 'Sistemas' %}
+            <a href="{{ url_for('sistemas.auditoria') }}" class="list-group-item {% if request.endpoint == 'sistemas.auditoria' %}active{% endif %}">
+                <i class="bi bi-journal-check"></i>Auditoría {# Icono cambiado para ser más cercano al prototipo #}
+            </a>
+            {% endif %}
+        </div>
+        
+        <div class="list-group list-group-flush mt-auto">
+            <a href="{{ url_for('auth.logout') }}" class="list-group-item"><i class="bi bi-box-arrow-left"></i>Cerrar Sesión</a>
+        </div>
+    </div>
+
+    <div id="page-content-wrapper" class="prototipo-main-content">
+        <header class="prototipo-header mb-4">
+            <button class="btn btn-primary" id="sidebarToggle">
+                <i class="bi bi-list"></i> {# Icono de hamburguesa para el menú #}
+            </button>
+            <div class="header-center-logos">
+                <div class="diresa-brand-header">
+                    <img src="{{ url_for('static', filename='img/diresa_logo.png') }}" alt="DIRESA Pasco Logo">
+                    <div class="diresa-text-header">
+                    </div>
+                </div>
+                <div class="minsa-brand-header">
+                    <img src="{{ url_for('static', filename='img/logo_ministerio_salud.png') }}" alt="Ministerio de Salud Logo">
+                </div>
+            </div>
+            <div class="header-right-icons">
+                <div class="notification-bell">
+                    <i class="bi bi-bell-fill"></i>
+                    <span class="badge bg-danger rounded-circle">1</span> {# Campana de notificación con contador #}
+                </div>
+                <div class="user-dropdown dropdown">
+                    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle user-icon-header"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end text-small shadow" aria-labelledby="dropdownUser">
+                        <li><a class="dropdown-item" href="#">Perfil</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Cerrar Sesión</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            {#
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            #}
+            
+            {% block dashboard_content %}{% endblock %}
+        </main>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', event => {
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        if (sidebarToggle) {
+            sidebarToggle.addEventListener('click', event => {
+                event.preventDefault();
+                document.getElementById('wrapper').classList.toggle('toggled');
+            });
+        }
+    });
+</script>
+{% endblock %}

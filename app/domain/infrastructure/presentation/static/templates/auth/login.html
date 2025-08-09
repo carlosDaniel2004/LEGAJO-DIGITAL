@@ -1,0 +1,32 @@
+ {% extends 'layouts/base.html' %}
+{% block title %}Iniciar Sesión - LegajoDigital{% endblock %}
+
+{% block body_content %}
+<div class="row vh-100 justify-content-center align-items-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-sm">
+            <div class="card-body p-4 p-md-5">
+                <div class="text-center mb-4">
+                    <h1 class="h3 mb-3 fw-bold">Legajo Digital DIRESA</h1>
+                    <p class="text-muted">Acceso al Sistema de Gestión</p>
+                </div>
+                
+                <form method="post" novalidate>
+                    {{ form.hidden_tag() }}
+                    <div class="form-floating mb-3">
+                        {{ form.username(class="form-control", placeholder="Usuario") }}
+                        {{ form.username.label }}
+                    </div>
+                    <div class="form-floating mb-3">
+                        {{ form.password(class="form-control", placeholder="Contraseña") }}
+                        {{ form.password.label }}
+                    </div>
+                    <div class="d-grid gap-2 mt-4">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

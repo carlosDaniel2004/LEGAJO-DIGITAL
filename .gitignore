@@ -1,0 +1,27 @@
+# Bloque para ignorar entornos virtuales de Python.
+# Evita subir carpetas de dependencias al control de versiones.
+venv/
+*.venv
+env/
+.env
+
+# Bloque para ignorar ficheros de Python compilados y cachés.
+# Mantiene el repositorio limpio de archivos generados automáticamente.
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Bloque para ignorar configuraciones locales y bases de datos de desarrollo.
+instance/
+*.sqlite
+*.db
+
+# Bloque para ignorar archivos de registro (logs).
+logs/
+*.log
+
+# Bloque para ignorar archivos de sistema operativo comunes.
+.DS_Store
+Thumbs.db
