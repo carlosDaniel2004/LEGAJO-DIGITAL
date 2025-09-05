@@ -1,0 +1,39 @@
+{% extends "layouts/dashboard.html" %}
+{% from "components/_form_helpers.html" import render_field %}
+
+{% block title %}Editar Usuario{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Editar Usuario: {{ user_to_edit.username }}</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Asignar Nuevo Rol</h6>
+        </div>
+        <div class="card-body">
+            <p><strong>Usuario:</strong> {{ user_to_edit.username }}</p>
+            <p><strong>Rol Actual:</strong> {{ user_to_edit.rol }}</p>
+            <hr>
+            <form method="POST" action="{{ url_for('sistemas.editar_usuario', user_id=user_to_edit.id) }}">
+                {{ form.csrf_token }}
+                
+                <div class="form-group row">
+                    <div class="col-sm-6 mb-3 mb-sm-0">
+                        {{ render_field(form.rol, class="form-control") }}
+                    </div>
+                </div>
+
+                <hr>
+                
+                <button type="submit" class="btn btn-primary btn-user">
+                    <i class="fas fa-save mr-2"></i>Actualizar Rol
+                </button>
+                <a href="{{ url_for('sistemas.gestionar_usuarios') }}" class="btn btn-secondary btn-user">
+                    <i class="fas fa-arrow-left mr-2"></i>Cancelar
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,10 +1,10 @@
 {% extends 'layouts/base.html' %}
 
 {% block body_content %}
-<div class="d-flex" id="wrapper"> {# Añadido id="wrapper" para el toggle del menú #}
+<div class="d-flex" id="wrapper">
     <div class="prototipo-sidebar d-flex flex-column">
         <div class="sidebar-user-info">
-            <h5 class="user-name">ANGELO CUEVA CONDOR</h5> {# Placeholder de nombre de usuario. Considera usar {{ current_user.nombre_completo or current_user.username }} #}
+            <h5 class="user-name">ANGELO CUEVA CONDOR</h5>
             {% if current_user.fecha_ultimo_login %}
             <div class="last-login">
                 Última sesión a las: {{ current_user.fecha_ultimo_login.strftime('%H:%M %d/%m/%Y') }}
@@ -16,7 +16,6 @@
         </div>
 
         <div class="sidebar-menu list-group list-group-flush flex-grow-1">
-            {# Los enlaces del menú lateral #}
             <div class="menu-heading">Opciones</div>
             <a href="{{ url_for('index') }}" class="list-group-item {% if request.endpoint == 'main_dashboard' %}active{% endif %}">
                 <i class="bi bi-house-door-fill"></i>Inicio
@@ -36,7 +35,7 @@
 
             {% if current_user.rol == 'Sistemas' %}
             <a href="{{ url_for('sistemas.auditoria') }}" class="list-group-item {% if request.endpoint == 'sistemas.auditoria' %}active{% endif %}">
-                <i class="bi bi-journal-check"></i>Auditoría {# Icono cambiado para ser más cercano al prototipo #}
+                <i class="bi bi-journal-check"></i>Auditoría
             </a>
             {% endif %}
         </div>
@@ -49,7 +48,7 @@
     <div id="page-content-wrapper" class="prototipo-main-content">
         <header class="prototipo-header mb-4">
             <button class="btn btn-primary" id="sidebarToggle">
-                <i class="bi bi-list"></i> {# Icono de hamburguesa para el menú #}
+                <i class="bi bi-list"></i>
             </button>
             <div class="header-center-logos">
                 <div class="diresa-brand-header">
@@ -64,7 +63,7 @@
             <div class="header-right-icons">
                 <div class="notification-bell">
                     <i class="bi bi-bell-fill"></i>
-                    <span class="badge bg-danger rounded-circle">1</span> {# Campana de notificación con contador #}
+                    <span class="badge bg-danger rounded-circle">1</span>
                 </div>
                 <div class="user-dropdown dropdown">
                     <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
@@ -80,19 +79,6 @@
         </header>
 
         <main>
-            {#
-            {% with messages = get_flashed_messages(with_categories=true) %}
-                {% if messages %}
-                    {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-            {% endwith %}
-            #}
-            
             {% block dashboard_content %}{% endblock %}
         </main>
     </div>
@@ -109,4 +95,6 @@
         }
     });
 </script>
+
+{% block scripts %}{% endblock %}
 {% endblock %}

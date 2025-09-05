@@ -41,7 +41,6 @@ def ver_legajo(personal_id):
     form_documento.id_seccion.choices = [('0', '-- Seleccione Sección --')] + legajo_service.get_secciones_for_select()
     form_documento.id_tipo.choices = [('0', '-- Seleccione Tipo --')] + legajo_service.get_tipos_documento_for_select()
     
-    # --- INICIO DE LA CORRECCIÓN ---
     # Se añade 'legajo_service=legajo_service' para que la plantilla pueda usarlo.
     return render_template(
         'admin/ver_legajo_completo.html', 
@@ -49,7 +48,6 @@ def ver_legajo(personal_id):
         form_documento=form_documento,
         legajo_service=legajo_service
     )
-    # --- FIN DE LA CORRECCIÓN ---
 
 
 @legajo_bp.route('/personal')
@@ -197,17 +195,22 @@ def eliminar_documento(documento_id):
     """
     Gestiona la solicitud de eliminación (lógica) de un documento.
     """
+    # --- INICIO DEL CÓDIGO DE SEGUIMIENTO ---
+    print(f"DEBUG: Iniciando eliminación para el documento ID: {documento_id}")
+    # --- FIN DEL CÓDIGO DE SEGUIMIENTO ---
+    
     legajo_service = current_app.config['LEGAJO_SERVICE']
     try:
-        # Llama al nuevo método del servicio para el borrado lógico
         legajo_service.delete_document_by_id(documento_id, current_user.id)
+        
         flash('Documento eliminado correctamente.', 'success')
+
     except Exception as e:
         current_app.logger.error(f"Error al eliminar documento {documento_id}: {e}")
-        flash('Ocurrió un error al intentar eliminar el documento.', 'danger')
     
-    # Redirige al usuario a la página anterior desde donde hizo clic
-    return redirect(request.referrer or url_for('main_dashboard'))   
+    # Redirige al usuario a la página anterior
+    print("DEBUG: Redirigiendo al usuario.")
+    return redirect(request.referrer or url_for('main_dashboard'))
 
 @legajo_bp.route('/api/tipos_documento/por_seccion/<int:id_seccion>')
 @login_required

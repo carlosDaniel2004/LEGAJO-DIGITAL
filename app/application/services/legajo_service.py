@@ -155,9 +155,10 @@ class LegajoService:
         
         self._personal_repo.delete_document_by_id(document_id)
         
+        
         self._audit_service.log(
             deleting_user_id,
             'Documentos',
             'ELIMINAR (Lógico)',
             f"Se marcó como eliminado el documento con ID {document_id}"
-        )    
+        )

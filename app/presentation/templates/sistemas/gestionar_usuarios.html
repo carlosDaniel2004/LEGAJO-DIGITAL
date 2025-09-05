@@ -1,0 +1,85 @@
+{% extends "layouts/dashboard.html" %}
+
+{% block title %}Gestión de Usuarios{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Gestión de Usuarios del Sistema</h1>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Lista de Usuarios Registrados</h6>
+        </div>
+        <div class="card-body">
+            
+            <a href="{{ url_for('sistemas.crear_usuario') }}" class="btn btn-primary btn-icon-split mb-4">
+                <span class="icon text-white-50"><i class="fas fa-user-plus"></i></span>
+                <span class="text">Crear Nuevo Usuario</span>
+            </a>
+            {% if user_list %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Rol Asignado</th>
+                                <th>Estado</th>
+                                <th>Último Login</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in user_list %}
+                            <tr>
+                                <td>{{ u.username }}</td>
+                                <td>{{ u.email or 'No registrado' }}</td>
+                                <td>
+                                    {% if u.nombre_rol == 'AdministradorLegajos' %}
+                                        <span class="badge badge-success">Admin Legajos</span>
+                                    {% elif u.nombre_rol == 'Sistemas' %}
+                                        <span class="badge badge-danger">Sistemas</span>
+                                    {% elif u.nombre_rol == 'RRHH' %}
+                                        <span class="badge badge-info">RRHH</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">{{ u.nombre_rol }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if u.activo %}
+                                        <span class="badge badge-success">Activo</span>
+                                    {% else %}
+                                        <span class="badge badge-secondary">Inactivo</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ u.ultimo_login.strftime('%Y-%m-%d %H:%M:%S') if u.ultimo_login else 'Nunca' }}</td>
+                                <td class="d-flex">
+                                    <a href="{{ url_for('sistemas.editar_usuario', user_id=u.id_usuario) }}" class="btn btn-warning btn-circle btn-sm mr-2" title="Editar Rol">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    
+                                    <form action="{{ url_for('sistemas.alternar_estado_usuario', user_id=u.id_usuario) }}" method="POST" onsubmit="return confirm('¿Está seguro de que desea cambiar el estado de este usuario?');">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        {% if u.activo %}
+                                            <button type="submit" class="btn btn-danger btn-circle btn-sm" title="Desactivar Usuario">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" class="btn btn-success btn-circle btn-sm" title="Activar Usuario">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-center">No se encontraron usuarios en el sistema.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
