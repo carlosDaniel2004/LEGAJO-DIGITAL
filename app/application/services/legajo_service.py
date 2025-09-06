@@ -4,6 +4,10 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, PatternFill
 from openpyxl.utils import get_column_letter
 import io
+from flask import current_app
+from datetime import datetime, timedelta
+
+
 # Define el servicio que contiene la lógica de negocio para los legajos.
 class LegajoService:
     # El constructor inyecta las dependencias del repositorio de personal y el servicio de auditoría.
@@ -28,6 +32,10 @@ class LegajoService:
             "filename": document_row[0],
             "data": document_row[1]
         }
+
+    def check_if_dni_exists(self, dni):
+        """Orquesta la verificación de la existencia de un DNI."""
+        return self._personal_repo.check_dni_exists(dni)
 
     # Lógica para obtener una lista paginada y filtrada de personal.
     def get_all_personal_paginated(self, page, per_page, filters=None):
@@ -162,3 +170,78 @@ class LegajoService:
             'ELIMINAR (Lógico)',
             f"Se marcó como eliminado el documento con ID {document_id}"
         )
+
+    def upload_document_to_personal(self, form_data, file_storage, current_user_id):
+        if not file_storage or not file_storage.filename:
+            raise ValueError("No se proporcionó ningún archivo para subir.")
+
+        
+        # 1. Validar la extensión del archivo
+        allowed_extensions = current_app.config['ALLOWED_EXTENSIONS']
+        filename = file_storage.filename
+        if '.' not in filename or filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
+            raise ValueError(f"Tipo de archivo no permitido. Solo se aceptan: {', '.join(allowed_extensions)}")
+
+        # 2. Validar el tamaño del archivo
+        # Leemos el contenido del archivo en memoria para obtener su tamaño
+        file_bytes = file_storage.read()
+        if len(file_bytes) > current_app.config['MAX_CONTENT_LENGTH']:
+            max_size_mb = current_app.config['MAX_CONTENT_LENGTH'] / (1024 * 1024)
+            raise ValueError(f"El archivo es demasiado grande. El tamaño máximo es de {max_size_mb:.0f} MB.")
+        
+        # Retrocedemos el "cursor" del archivo al inicio por si se necesita leer de nuevo
+        file_storage.seek(0)
+        
+
+        file_hash = hashlib.sha256(file_bytes).hexdigest()
+        
+        doc_data = form_data.copy()
+        doc_data['nombre_archivo'] = filename
+        doc_data['hash_archivo'] = file_hash
+        id_personal = doc_data.get('id_personal')
+
+        self._personal_repo.add_document(doc_data, file_bytes)
+
+   # def upload_document_to_personal(self, form_data, file_storage, current_user_id):
+        if not file_storage or not file_storage.filename:
+            raise ValueError("No se proporcionó ningún archivo para subir.")
+
+        file_bytes = file_storage.read()
+        file_hash = hashlib.sha256(file_bytes).hexdigest()
+        
+        doc_data = form_data.copy()
+        doc_data['nombre_archivo'] = file_storage.filename
+        doc_data['hash_archivo'] = file_hash
+        id_personal = doc_data.get('id_personal')
+
+        self._personal_repo.add_document(doc_data, file_bytes)
+        self._audit_service.log(current_user_id, 'Documentos', 'SUBIR', f"Subió '{file_storage.filename}' al personal ID {id_personal}")
+
+    def check_document_status_for_all_personal(self, days_to_expire=30):
+        """
+        Revisa todos los documentos con fecha de vencimiento y devuelve un
+        resumen del estado por cada persona.
+        """
+        all_docs = self._personal_repo.get_all_documents_with_expiration()
+        status_summary = {}
+        today = datetime.now().date()
+        expiration_threshold = today + timedelta(days=days_to_expire)
+
+        for doc in all_docs:
+            personal_id = doc['id_personal']
+            vencimiento = doc['fecha_vencimiento']
+
+            if personal_id not in status_summary:
+                status_summary[personal_id] = {'expired': 0, 'expiring_soon': 0}
+
+            if vencimiento < today:
+                status_summary[personal_id]['expired'] += 1
+            elif vencimiento <= expiration_threshold:
+                status_summary[personal_id]['expiring_soon'] += 1
+        
+        return status_summary
+
+
+    def get_tipos_documento_by_seccion(self, seccion_id):
+        """Orquesta la obtención de tipos de documento filtrados por sección."""
+        return self._personal_repo.get_tipos_documento_by_seccion(seccion_id)

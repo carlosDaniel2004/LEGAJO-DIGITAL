@@ -1,43 +1,135 @@
 {% extends 'layouts/dashboard.html' %}
 {% from "components/_form_helpers.html" import render_field %}
+
 {% block title %}{{ titulo }}{% endblock %}
 
 {% block dashboard_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3">{{ titulo }}</h1>
-    <a href="{{ url_for('main_dashboard') }}" class="btn btn-secondary">Cancelar</a>
-</div>
-<div class="card shadow-sm">
-    <div class="card-header">
-        Información Personal
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">{{ titulo }}</h1>
+        <a href="{{ url_for('legajo.listar_personal') }}" class="btn btn-secondary">
+            <i class="bi bi-x-circle me-1"></i> Cancelar y Volver
+        </a>
     </div>
-    <div class="card-body">
-        <form method="POST" novalidate>
-            {{ form.hidden_tag() }}
-            <h5 class="mb-3">Datos de Identificación</h5>
-            <div class="row">
-                <div class="col-md-6">{{ render_field(form.nombres) }}</div>
-                <div class="col-md-6">{{ render_field(form.apellidos) }}</div>
-            </div>
-            <div class="row">
-                <div class="col-md-4">{{ render_field(form.dni) }}</div>
-                <div class="col-md-4">{{ render_field(form.sexo) }}</div>
-                <div class="col-md-4">{{ render_field(form.fecha_nacimiento, type="date") }}</div>
-            </div>
-             <div class="row">
-                <div class="col-md-6">{{ render_field(form.email) }}</div>
-                <div class="col-md-6">{{ render_field(form.telefono) }}</div>
-            </div>
-            <hr>
-            <h5 class="mb-3">Datos Laborales</h5>
-            <div class="row">
-                <div class="col-md-6">{{ render_field(form.id_unidad) }}</div>
-                <div class="col-md-6">{{ render_field(form.fecha_ingreso, type="date") }}</div>
-            </div>
-            <div class="mt-4">
-                {{ form.submit(class="btn btn-primary") }}
-            </div>
-        </form>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-success text-white">
+            <h6 class="m-0 font-weight-bold">
+                <i class="bi bi-person-plus-fill me-2"></i>Datos del Nuevo Personal
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" novalidate>
+                {{ form.hidden_tag() }}
+
+                <h5 class="mb-3 text-primary">1. Datos de Identificación</h5>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        {{ render_field(form.dni) }}
+                        <div id="dni-feedback" class="invalid-feedback d-block"></div>
+                    </div>
+                    <div class="col-md-4">
+                        {{ render_field(form.nombres) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ render_field(form.apellidos) }}
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        {{ render_field(form.fecha_nacimiento, class="form-control datepicker") }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ render_field(form.sexo) }}
+                    </div>
+                     <div class="col-md-4">
+                        {{ render_field(form.nacionalidad) }}
+                    </div>
+                </div>
+
+                <hr>
+                <h5 class="mb-3 mt-4 text-primary">2. Datos de Contacto y Laborales</h5>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        {{ render_field(form.email) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ render_field(form.telefono) }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ render_field(form.estado_civil) }}
+                    </div>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-12">
+                        {{ render_field(form.direccion) }}
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        {{ render_field(form.id_unidad) }}
+                    </div>
+                     <div class="col-md-6">
+                        {{ render_field(form.fecha_ingreso, class="form-control datepicker") }}
+                    </div>
+                </div>
+                
+                <hr class="my-4">
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" id="submit-btn" class="btn btn-primary">
+                        <i class="bi bi-save-fill me-2"></i> Registrar Personal
+                    </button>
+                </div>
+                </form>
+        </div>
     </div>
-</div>
+{% endblock %}
+
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const dniInput = document.getElementById('dni');
+    const dniFeedback = document.getElementById('dni-feedback');
+    const submitBtn = document.getElementById('submit-btn');
+
+    if (dniInput) {
+        dniInput.addEventListener('blur', function () {
+            const dni = this.value.trim();
+            
+            dniFeedback.textContent = '';
+            dniInput.classList.remove('is-invalid', 'is-valid');
+            submitBtn.disabled = false;
+
+            if (dni.length === 8) {
+                dniFeedback.textContent = 'Verificando...';
+                
+                fetch(`/legajos/api/personal/check_dni/${dni}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.exists) {
+                            dniFeedback.textContent = 'Este DNI ya se encuentra registrado.';
+                            dniInput.classList.add('is-invalid');
+                            submitBtn.disabled = true;
+                        } else {
+                            dniFeedback.textContent = 'DNI disponible.';
+                            dniInput.classList.add('is-valid');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al verificar DNI:', error);
+                        dniFeedback.textContent = 'No se pudo verificar el DNI. Intente de nuevo.';
+                    });
+            } else if (dni.length > 0) {
+                dniFeedback.textContent = 'El DNI debe tener 8 dígitos.';
+                dniInput.classList.add('is-invalid');
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

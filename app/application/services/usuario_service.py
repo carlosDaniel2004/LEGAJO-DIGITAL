@@ -28,7 +28,7 @@ class UsuarioService:
             print("---------------------------------------------------------")
             print(f"--- CÓDIGO 2FA (PARA DESARROLLO): {code} ---")
             print("---------------------------------------------------------")
-            
+            """
             # --- Lógica de envío de correo 2FA ---
             # Verifica si el correo existe y no es una cadena vacía después de limpiar espacios
             if user.email and user.email.strip(): 
@@ -47,7 +47,7 @@ class UsuarioService:
             else:
                 # Si el correo no es válido, registra una advertencia y no intenta enviar el email
                 logger.warning(f"El usuario '{username}' no tiene un correo electrónico válido registrado ('{user.email}'). No se enviará el código 2FA por email.")
-
+            """
             return user.id
         
         return None

@@ -27,3 +27,10 @@ class Config:
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER') 
+
+        # --- CONFIGURACIÓN PARA LA SUBIDA DE ARCHIVOS ---
+    # Define las extensiones de archivo permitidas (en minúsculas)
+    ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'docx', 'xlsx'}
+    
+    # Define el tamaño máximo del archivo en bytes (ej. 5MB)
+    MAX_CONTENT_LENGTH = 5 * 1024 * 1024

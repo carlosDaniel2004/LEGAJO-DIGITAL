@@ -7,8 +7,25 @@ from flask import Blueprint, jsonify, render_template, redirect, send_file, url_
 from flask_login import login_required, current_user
 from app.decorators import role_required
 from app.application.forms import PersonalForm, DocumentoForm, FiltroPersonalForm
-
+from app.domain.models.personal import Personal
+from datetime import datetime
 legajo_bp = Blueprint('legajo', __name__)
+
+@legajo_bp.route('/api/tipos_documento/por_seccion/<int:id_seccion>')
+@login_required
+@role_required('AdministradorLegajos', 'RRHH', 'Sistemas')
+def api_tipos_documento_por_seccion(id_seccion):
+    """
+    API endpoint para obtener los tipos de documento filtrados por sección.
+    """
+    try:
+        legajo_service = current_app.config['LEGAJO_SERVICE']
+        tipos = legajo_service.get_tipos_documento_by_seccion(id_seccion)
+        return jsonify(tipos)
+    except Exception as e:
+        current_app.logger.error(f"Error en API de tipos de documento: {e}")
+        return jsonify({"error": "No se pudieron cargar los datos"}), 500
+
 
 # --- NUEVA RUTA API para obtener tipos de documento por sección ---
 @legajo_bp.route('/api/tipos_documento/por_seccion/<int:seccion_id>', methods=['GET'])
@@ -33,22 +50,51 @@ def ver_legajo(personal_id):
     legajo_service = current_app.config['LEGAJO_SERVICE']
     legajo_completo = legajo_service.get_personal_details(personal_id)
     
+    # ===============================================================
+    # INICIO DE LA CORRECCIÓN: MANEJO DEL TIPO DE DATO INCORRECTO
+    # ===============================================================
+    # Esta sección verifica si recibimos un objeto 'Personal' en lugar del
+    # diccionario esperado. Si es así, lo transforma para evitar el crash.
+    if isinstance(legajo_completo, Personal):
+        # Advertencia: Esto soluciona el error, pero la página podría mostrar
+        # datos incompletos (sin documentos, contratos, etc.) porque la
+        # capa de servicio no los proporcionó.
+        legajo_data = vars(legajo_completo) # Convierte el objeto a un diccionario
+        legajo_completo = {
+            'personal': legajo_data,
+            'documentos': [],
+            'contratos': [],
+            'estudios': [],
+            'capacitaciones': [],
+            'historial_laboral': [],
+            'licencias': []
+        }
+    # ===============================================================
+    # FIN DE LA CORRECCIÓN
+    # ===============================================================
+
+    # Esta línea ahora funcionará correctamente con ambas estructuras de datos
     if not legajo_completo or not legajo_completo.get('personal'):
         flash('El legajo solicitado no existe.', 'danger')
         return redirect(url_for('legajo.listar_personal'))
         
     form_documento = DocumentoForm()
-    form_documento.id_seccion.choices = [('0', '-- Seleccione Sección --')] + legajo_service.get_secciones_for_select()
-    form_documento.id_tipo.choices = [('0', '-- Seleccione Tipo --')] + legajo_service.get_tipos_documento_for_select()
+    # Se asegura de que la lista de opciones no esté vacía antes de añadir
+    secciones = legajo_service.get_secciones_for_select()
+    if secciones:
+        form_documento.id_seccion.choices = [('0', '-- Seleccione Sección --')] + secciones
+    else:
+        form_documento.id_seccion.choices = [('0', 'No hay secciones disponibles')]
+
+    form_documento.id_tipo.choices = [('0', '-- Seleccione Tipo --')]
     
-    # Se añade 'legajo_service=legajo_service' para que la plantilla pueda usarlo.
     return render_template(
         'admin/ver_legajo_completo.html', 
         legajo=legajo_completo, 
         form_documento=form_documento,
-        legajo_service=legajo_service
+        legajo_service=legajo_service,
+        today=datetime.now().date()
     )
-
 
 @legajo_bp.route('/personal')
 @login_required
@@ -57,9 +103,17 @@ def listar_personal():
     form = FiltroPersonalForm(request.args)
     page = request.args.get('page', 1, type=int)
     filters = {'dni': form.dni.data, 'nombres': form.nombres.data}
+    
     legajo_service = current_app.config['LEGAJO_SERVICE']
     pagination = legajo_service.get_all_personal_paginated(page, 15, filters)
-    return render_template('admin/listar_personal.html', form=form, pagination=pagination)
+    
+    # Nueva lógica para obtener el estado de los documentos
+    document_status = legajo_service.check_document_status_for_all_personal()
+    
+    return render_template('admin/listar_personal.html', 
+                           form=form, 
+                           pagination=pagination,
+                           document_status=document_status)
 
 @legajo_bp.route('/personal/nuevo', methods=['GET', 'POST'])
 @login_required
@@ -212,20 +266,6 @@ def eliminar_documento(documento_id):
     print("DEBUG: Redirigiendo al usuario.")
     return redirect(request.referrer or url_for('main_dashboard'))
 
-@legajo_bp.route('/api/tipos_documento/por_seccion/<int:id_seccion>')
-@login_required
-def api_tipos_documento_por_seccion(id_seccion):
-    """
-    API endpoint para obtener los tipos de documento filtrados por sección.
-    """
-    try:
-        legajo_service = current_app.config['LEGAJO_SERVICE']
-        tipos = legajo_service.get_tipos_documento_for_seccion(id_seccion)
-        return jsonify(tipos)
-    except Exception as e:
-        current_app.logger.error(f"Error en API de tipos de documento: {e}")
-        return jsonify({"error": "No se pudieron cargar los datos"}), 500
-    
 
 @legajo_bp.route('/documento/<int:documento_id>/visualizar')
 @login_required
@@ -257,3 +297,14 @@ def visualizar_documento(documento_id):
             current_app.logger.error(f"Error al visualizar documento {documento_id}: {e}")
             flash('Ocurrió un error al intentar visualizar el archivo.', 'danger')
             return redirect(request.referrer or url_for('main_dashboard'))    
+
+
+@legajo_bp.route('/api/personal/check_dni/<string:dni>')
+@login_required
+def check_dni(dni):
+    """
+    API endpoint para verificar si un DNI ya existe.
+    """
+    legajo_service = current_app.config['LEGAJO_SERVICE']
+    exists = legajo_service.check_if_dni_exists(dni)
+    return jsonify({'exists': exists})

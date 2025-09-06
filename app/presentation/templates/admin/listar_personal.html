@@ -68,6 +68,24 @@
                             </td>
                         </tr>
                         {% else %}
+                        {% for persona in pagination.items %}
+                            <tr>
+                                <td>{{ persona.dni }}</td>
+                                <td>
+                                    {{ persona.apellidos }}, {{ persona.nombres }}
+                                    {% set status = document_status.get(persona.id_personal) %}
+                                    {% if status %}
+                                        {% if status.expired > 0 %}
+                                            <span class="badge bg-danger ms-2" title="{{ status.expired }} documento(s) vencido(s)">Vencido</span>
+                                        {% elif status.expiring_soon > 0 %}
+                                            <span class="badge bg-warning text-dark ms-2" title="{{ status.expiring_soon }} documento(s) por vencer">Por Vencer</span>
+                                        {% endif %}
+                                    {% endif %}
+                                    </td>
+                                <td>{{ persona.unidad_administrativa }}</td>
+                                </tr>
+                        {% endfor %}
+
                         <tr>
                             <td colspan="5" class="text-center">No se encontraron registros que coincidan con la búsqueda.</td>
                         </tr>

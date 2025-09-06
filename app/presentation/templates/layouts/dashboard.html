@@ -4,7 +4,7 @@
 <div class="d-flex" id="wrapper">
     <div class="prototipo-sidebar d-flex flex-column">
         <div class="sidebar-user-info">
-            <h5 class="user-name">ANGELO CUEVA CONDOR</h5>
+            <h5 class="user-name">{{ current_user.nombre_completo or current_user.username }}</h5>
             {% if current_user.fecha_ultimo_login %}
             <div class="last-login">
                 Última sesión a las: {{ current_user.fecha_ultimo_login.strftime('%H:%M %d/%m/%Y') }}
@@ -25,11 +25,8 @@
             <a href="{{ url_for('legajo.crear_personal') }}" class="list-group-item {% if request.endpoint == 'legajo.crear_personal' %}active{% endif %}">
                 <i class="bi bi-folder-plus"></i>Nuevo Legajo
             </a>
-            <a href="{{ url_for('legajo.listar_personal') }}" class="list-group-item {% if request.endpoint == 'legajo.listar_personal' %}active{% endif %}">
+            <a href="{{ url_for('legajo.listar_personal') }}" class="list-group-item {% if request.endpoint in ['legajo.listar_personal', 'legajo.ver_legajo'] %}active{% endif %}">
                 <i class="bi bi-search"></i>Consultar Legajo
-            </a>
-            <a href="{{ url_for('legajo.listar_personal') }}" class="list-group-item {% if request.endpoint == 'legajo.editar_personal' %}active{% endif %}">
-                <i class="bi bi-folder-symlink"></i>Actualizar Legajo
             </a>
             {% endif %}
 
@@ -53,32 +50,44 @@
             <div class="header-center-logos">
                 <div class="diresa-brand-header">
                     <img src="{{ url_for('static', filename='img/diresa_logo.png') }}" alt="DIRESA Pasco Logo">
-                    <div class="diresa-text-header">
-                    </div>
                 </div>
                 <div class="minsa-brand-header">
                     <img src="{{ url_for('static', filename='img/logo_ministerio_salud.png') }}" alt="Ministerio de Salud Logo">
                 </div>
             </div>
+
             <div class="header-right-icons">
-                <div class="notification-bell">
-                    <i class="bi bi-bell-fill"></i>
-                    <span class="badge bg-danger rounded-circle">1</span>
+                <div class="notification-bell dropdown">
+                    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownNotifications" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-bell-fill"></i>
+                        <span class="badge bg-danger rounded-circle">1</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end text-small shadow" aria-labelledby="dropdownNotifications">
+                        <li><a class="dropdown-item" href="#">
+                            <div class="fw-bold">Contrato por vencer</div>
+                            <div class="small text-muted">Juan Pérez - Vence en 5 días</div>
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-center small text-muted" href="#">Ver todas las notificaciones</a></li>
+                    </ul>
                 </div>
+
                 <div class="user-dropdown dropdown">
                     <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle user-icon-header"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end text-small shadow" aria-labelledby="dropdownUser">
-                        <li><a class="dropdown-item" href="#">Perfil</a></li>
+                        <li><a class="dropdown-item" href="#">Mi Perfil</a></li>
+                        <li><a class="dropdown-item" href="#">Configuración</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Cerrar Sesión</a></li>
                     </ul>
                 </div>
             </div>
-        </header>
+            </header>
 
         <main>
+            {% include 'components/_toast.html' %}
             {% block dashboard_content %}{% endblock %}
         </main>
     </div>
@@ -97,4 +106,5 @@
 </script>
 
 {% block scripts %}{% endblock %}
+
 {% endblock %}

@@ -62,6 +62,22 @@ class SqlServerUsuarioRepository(IUsuarioRepository):
 # --- REPOSITORIO DE PERSONAL ---
 # Implementación completa del repositorio de personal.
 class SqlServerPersonalRepository(IPersonalRepository):
+
+    def check_dni_exists(self, dni):
+        """Verifica si un DNI ya existe en la tabla de personal."""
+        conn = get_db_read()
+        cursor = conn.cursor()
+        cursor.execute("SELECT 1 FROM personal WHERE dni = ?", dni)
+        return cursor.fetchone() is not None
+
+    def get_all_documents_with_expiration(self):
+        """Llama al SP para obtener todos los documentos activos con fecha de vencimiento."""
+        conn = get_db_read()
+        cursor = conn.cursor()
+        cursor.execute("{CALL sp_listar_documentos_con_vencimiento}")
+        return [_row_to_dict(cursor, row) for row in cursor.fetchall()]
+
+
     def find_document_by_id(self, document_id):
         """
         Llama al SP para obtener los datos de un único documento por su ID.
@@ -236,6 +252,16 @@ class SqlServerPersonalRepository(IPersonalRepository):
         row = cursor.fetchone()
         return Personal.from_dict(_row_to_dict(cursor, row)) if row else None
 
+    def get_tipos_documento_by_seccion(self, id_seccion):
+        """
+        Llama a un SP para obtener los tipos de documento asociados a una sección
+        y los devuelve en un formato ideal para JSON.
+        """
+        conn = get_db_read()
+        cursor = conn.cursor()
+        cursor.execute("{CALL sp_listar_tipos_documento_por_seccion(?)}", id_seccion)
+        # Devuelve directamente una lista de diccionarios
+        return [{"id": row.id_tipo, "nombre": row.nombre_tipo} for row in cursor.fetchall()]    
 
 # --- REPOSITORIO DE AUDITORÍA ---
 # Implementación completa y corregida del repositorio de auditoría.
