@@ -4,7 +4,15 @@
 
 {% block dashboard_content %}
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3">Consultar Legajo</h1>
+        <h1 class="h3 mb-0">Gestión de Legajos del Personal</h1>
+        <div>
+            <a href="{{ url_for('legajo.exportar_lista_general_excel') }}" class="btn btn-outline-success me-2">
+                <i class="bi bi-file-earmark-excel-fill me-1"></i> Exportar Todo
+            </a>
+            <a href="{{ url_for('legajo.crear_personal') }}" class="btn btn-success">
+                <i class="bi bi-plus-circle-fill me-1"></i> Crear Nuevo Legajo
+            </a>
+        </div>
     </div>
 
     <div class="card shadow-sm mb-4">
@@ -68,22 +76,22 @@
                             </td>
                         </tr>
                         {% else %}
-                        {% for persona in pagination.items %}
-                            <tr>
-                                <td>{{ persona.dni }}</td>
-                                <td>
-                                    {{ persona.apellidos }}, {{ persona.nombres }}
-                                    {% set status = document_status.get(persona.id_personal) %}
-                                    {% if status %}
-                                        {% if status.expired > 0 %}
-                                            <span class="badge bg-danger ms-2" title="{{ status.expired }} documento(s) vencido(s)">Vencido</span>
-                                        {% elif status.expiring_soon > 0 %}
-                                            <span class="badge bg-warning text-dark ms-2" title="{{ status.expiring_soon }} documento(s) por vencer">Por Vencer</span>
-                                        {% endif %}
+                                                {% for persona in pagination.items %}
+                        <tr>
+                            <td>{{ persona.dni }}</td>
+                            <td>
+                                {{ persona.apellidos }}, {{ persona.nombres }}
+                                {% set status = document_status.get(persona.id_personal) %}
+                                {% if status %}
+                                    {% if status.expired > 0 %}
+                                        <span class="badge bg-danger ms-2" title="{{ status.expired }} documento(s) vencido(s)">Vencido</span>
+                                    {% elif status.expiring_soon > 0 %}
+                                        <span class="badge bg-warning text-dark ms-2" title="{{ status.expiring_soon }} documento(s) por vencer">Por Vencer</span>
                                     {% endif %}
-                                    </td>
-                                <td>{{ persona.unidad_administrativa }}</td>
-                                </tr>
+                                {% endif %}
+                                </td>
+                            <td>{{ persona.unidad_administrativa }}</td>
+                            </tr>
                         {% endfor %}
 
                         <tr>

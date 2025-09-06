@@ -169,6 +169,8 @@ def subir_documento(personal_id):
                 break
     return redirect(url_for('legajo.ver_legajo', personal_id=personal_id))
 
+
+
 @legajo_bp.route('/personal/<int:personal_id>/eliminar', methods=['POST'])
 @login_required
 @role_required('AdministradorLegajos')
@@ -308,3 +310,33 @@ def check_dni(dni):
     legajo_service = current_app.config['LEGAJO_SERVICE']
     exists = legajo_service.check_if_dni_exists(dni)
     return jsonify({'exists': exists})
+
+
+@legajo_bp.route('/personal/exportar/general')
+@login_required
+@role_required('AdministradorLegajos', 'RRHH', 'Sistemas')
+def exportar_lista_general_excel():
+    """
+    Genera y descarga un archivo Excel con el reporte general de todo el personal.
+    """
+    try:
+        legajo_service = current_app.config['LEGAJO_SERVICE']
+        
+        # Llama al método existente que genera el reporte en memoria
+        excel_stream = legajo_service.generate_general_report_excel()
+        
+        # Registrar en auditoría
+        audit_service = current_app.config['AUDIT_SERVICE']
+        audit_service.log(current_user.id, 'Reportes', 'EXPORTAR_GENERAL_EXCEL', "Exportó el reporte general de personal a Excel.")
+
+        # Enviar el archivo al usuario
+        return send_file(
+            excel_stream,
+            as_attachment=True,
+            download_name='Reporte_General_Personal.xlsx',
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+    except Exception as e:
+        current_app.logger.error(f"Error al exportar el reporte general a Excel: {e}")
+        flash('Ocurrió un error al generar el reporte de Excel.', 'danger')
+        return redirect(url_for('legajo.listar_personal'))

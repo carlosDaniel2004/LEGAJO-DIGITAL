@@ -60,16 +60,35 @@ class LegajoService:
         if not file_storage or not file_storage.filename:
             raise ValueError("No se proporcionó ningún archivo para subir.")
 
+        allowed_extensions = current_app.config['ALLOWED_EXTENSIONS']
+        filename = file_storage.filename
+        if '.' not in filename or filename.rsplit('.', 1)[1].lower() not in allowed_extensions:
+            raise ValueError(f"Tipo de archivo no permitido. Solo se aceptan: {', '.join(allowed_extensions)}")
+
         file_bytes = file_storage.read()
+        if len(file_bytes) > current_app.config['MAX_CONTENT_LENGTH']:
+            max_size_mb = current_app.config['MAX_CONTENT_LENGTH'] / (1024 * 1024)
+            raise ValueError(f"El archivo es demasiado grande. El tamaño máximo es de {max_size_mb:.0f} MB.")
+        
+        file_storage.seek(0)
+        
         file_hash = hashlib.sha256(file_bytes).hexdigest()
         
         doc_data = form_data.copy()
-        doc_data['nombre_archivo'] = file_storage.filename
+        doc_data['nombre_archivo'] = filename
         doc_data['hash_archivo'] = file_hash
         id_personal = doc_data.get('id_personal')
 
         self._personal_repo.add_document(doc_data, file_bytes)
-        self._audit_service.log(current_user_id, 'Documentos', 'SUBIR', f"Subió '{file_storage.filename}' al personal ID {id_personal}")
+        
+        self._audit_service.log(
+            current_user_id,
+            'Documentos',
+            'SUBIR',
+            f"Subió el archivo '{filename}' al legajo del personal ID {id_personal}"
+        )
+
+
 
     def get_personal_details(self, personal_id):
         return self._personal_repo.get_full_legajo_by_id(personal_id)

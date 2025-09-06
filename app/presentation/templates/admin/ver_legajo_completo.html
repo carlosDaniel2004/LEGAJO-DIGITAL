@@ -3,7 +3,6 @@
 
 {% block title %}Legajo de {{ legajo.personal.nombres }} {{ legajo.personal.apellidos }}{% endblock %}
 
-{# ... (LA MACRO 'render_table' SE MANTIENE IGUAL) ... #}
 {% macro render_table(items, title) %}
     <h5 class="mt-4 mb-3"><i class="bi bi-collection-fill me-2"></i>{{ title }}</h5>
     {% if items %}
@@ -89,10 +88,8 @@
                     <dl class="row">
                         <dt class="col-sm-4">Nombres:</dt>
                         <dd class="col-sm-8">{{ legajo.personal.nombres }}</dd>
-
                         <dt class="col-sm-4">Apellidos:</dt>
                         <dd class="col-sm-8">{{ legajo.personal.apellidos }}</dd>
-                        
                         <dt class="col-sm-4">Fecha de Nac.:</dt>
                         <dd class="col-sm-8">{{ legajo.personal.fecha_nacimiento.strftime('%d/%m/%Y') if legajo.personal.fecha_nacimiento else 'No registrado' }}</dd>
                     </dl>
@@ -101,10 +98,8 @@
                     <dl class="row">
                         <dt class="col-sm-4">Correo:</dt>
                         <dd class="col-sm-8">{{ legajo.personal.email or 'No registrado' }}</dd>
-
                         <dt class="col-sm-4">Teléfono:</dt>
                         <dd class="col-sm-8">{{ legajo.personal.telefono or 'No registrado' }}</dd>
-                        
                         <dt class="col-sm-4">Dirección:</dt>
                         <dd class="col-sm-8">{{ legajo.personal.direccion or 'No registrado' }}</dd>
                     </dl>
@@ -119,7 +114,6 @@
             {% set seccion_id = seccion[0]|int %}
             {% set seccion_nombre = seccion[1] %}
             {% set documents_in_section = legajo.documentos|selectattr('id_seccion', 'equalto', seccion_id)|list %}
-            
             <div class="accordion-item">
                 <h2 class="accordion-header">
                     <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ seccion_id }}">
@@ -149,14 +143,14 @@
                     <div class="col-md-6">{{ render_field(form_documento.id_tipo, id='tipo_doc_select') }}</div>
                 </div>
                 {{ render_field(form_documento.descripcion) }}
-                
                 {{ render_field(form_documento.archivo, accept=".pdf,.png,.jpg,.jpeg,.docx,.xlsx") }}
                 <div class="form-text mt-1">
                     Archivos permitidos: PDF, PNG, JPG, DOCX, XLSX. Tamaño máximo: 5 MB.
                 </div>
-
                 <div class="mt-3">
-                    {{ form_documento.submit(class="btn btn-success") }}
+                    <button type="submit" class="btn btn-success" onclick="this.disabled=true; this.innerHTML='<span class=\'spinner-border spinner-border-sm\'></span> Subiendo...'; this.form.submit();">
+                        <i class="bi bi-plus-lg me-1"></i> Añadir Documento
+                    </button>
                 </div>
             </form>
         </div>
@@ -172,7 +166,7 @@
           </div>
           <div class="modal-body">
             <p>¿Está seguro de que desea eliminar el documento <strong id="docNameToDelete" class="text-danger"></strong>?</p>
-            <p class="text-muted small"><strong>Advertencia:</strong> Esta acción marcará el documento como eliminado, pero podrá ser recuperado por un administrador del sistema.</p>
+            <p class="text-muted small"><strong>Advertencia:</strong> Esta acción marcará el documento como eliminado.</p>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -184,14 +178,13 @@
         </div>
       </div>
     </div>
-    {% endblock %}
+{% endblock %}
+
 
 {% block scripts %}
     {{ super() }}
     <script>
     document.addEventListener('DOMContentLoaded', function () {
-        
-        // --- LÓGICA RESTAURADA PARA EL MODAL DE ELIMINACIÓN DIRECTA ---
         const confirmDeleteModal = document.getElementById('confirmDeleteModal');
         if (confirmDeleteModal) {
             confirmDeleteModal.addEventListener('show.bs.modal', function (event) {
@@ -201,17 +194,11 @@
                 const modalTitle = confirmDeleteModal.querySelector('#docNameToDelete');
                 const deleteForm = confirmDeleteModal.querySelector('#deleteDocForm');
                 
-                if (modalTitle) {
-                    modalTitle.textContent = docName;
-                }
-                if (deleteForm) {
-                    // Apunta a la ruta de eliminación directa
-                    deleteForm.action = `/legajos/documento/${docId}/eliminar`;
-                }
+                if (modalTitle) { modalTitle.textContent = docName; }
+                if (deleteForm) { deleteForm.action = `/legajos/documento/${docId}/eliminar`; }
             });
         }
 
-        // --- LÓGICA PARA MENÚS DESPLEGABLES (se mantiene igual) ---
         const seccionSelect = document.getElementById('seccion_select');
         const tipoDocSelect = document.getElementById('tipo_doc_select');
         
@@ -246,9 +233,7 @@
                 }
             };
 
-            seccionSelect.addEventListener('change', function () {
-                loadTiposDocumento(this.value);
-            });
+            seccionSelect.addEventListener('change', function () { loadTiposDocumento(this.value); });
 
             if (seccionSelect.value && seccionSelect.value !== '0') {
                 loadTiposDocumento(seccionSelect.value);

@@ -175,9 +175,17 @@ class SqlServerPersonalRepository(IPersonalRepository):
     def add_document(self, doc_data, file_bytes):
         conn = get_db_write()
         cursor = conn.cursor()
-        params = (doc_data.get('id_personal'), doc_data.get('id_tipo'), doc_data.get('id_seccion'),
-                  doc_data.get('nombre_archivo'), doc_data.get('fecha_emision'), doc_data.get('fecha_vencimiento'),
-                  doc_data.get('descripcion'), file_bytes, doc_data.get('hash_archivo'))
+        params = (
+            doc_data.get('id_personal'), 
+            doc_data.get('id_tipo'), 
+            doc_data.get('id_seccion'),
+            doc_data.get('nombre_archivo'), 
+            doc_data.get('fecha_emision'), 
+            doc_data.get('fecha_vencimiento'),
+            doc_data.get('descripcion'), 
+            file_bytes, 
+            doc_data.get('hash_archivo')
+        )
         cursor.execute("{CALL sp_subir_documento(?, ?, ?, ?, ?, ?, ?, ?, ?)}", params)
         conn.commit()
     
