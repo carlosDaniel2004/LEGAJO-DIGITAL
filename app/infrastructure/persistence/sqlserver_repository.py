@@ -270,6 +270,27 @@ class SqlServerPersonalRepository(IPersonalRepository):
         cursor.execute("{CALL sp_listar_tipos_documento_por_seccion(?)}", id_seccion)
         # Devuelve directamente una lista de diccionarios
         return [{"id": row.id_tipo, "nombre": row.nombre_tipo} for row in cursor.fetchall()]    
+    
+
+    # Algunas agregaciones para el panel de graficos rrhh
+
+    def get_count_empleados_por_unidad(self):
+        """Consulta SQL que cuenta empleados por unidad administrativa."""
+        conn = get_db_read()
+        cursor = conn.cursor()
+        query = """
+            SELECT u.nombre AS nombre_unidad, COUNT(p.id_personal) AS cantidad
+            FROM personal p
+            INNER JOIN unidad_administrativa u ON p.id_unidad = u.id_unidad
+            GROUP BY u.nombre
+            ORDER BY cantidad DESC;
+        """
+        cursor.execute(query)
+        # fetchall devuelve tuplas, pero usamos zip para dict
+        columns = [col[0] for col in cursor.description]
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+
 
 # --- REPOSITORIO DE AUDITORÍA ---
 # Implementación completa y corregida del repositorio de auditoría.

@@ -1,0 +1,128 @@
+{% extends 'layouts/dashboard.html' %}
+{% from "components/_form_helpers.html" import render_field %}
+
+{% block title %}Legajo (Vista RRHH) - {{ legajo.personal.nombres }} {{ legajo.personal.apellidos }}{% endblock %}
+
+{% macro render_table(items, title) %}
+    <h5 class="mt-4 mb-3"><i class="bi bi-collection-fill me-2"></i>{{ title }}</h5>
+    {% if items %}
+    <div class="table-responsive">
+        <table class="table table-bordered table-sm table-hover align-middle">
+            <thead class="table-light">
+                <tr class="text-center">
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 30%;">Tipo de Documento</th>
+                    <th>Descripción / Contenido</th>
+                    <th style="width: 15%;">Fecha</th>
+                    <th style="width: 10%;">Ver</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                    {% set row_class = '' %}
+                    {% set alert_badge = '' %}
+                    {% if item.fecha_vencimiento and today %}
+                        {% set days_diff = (item.fecha_vencimiento - today).days %}
+                        {% if days_diff < 0 %}
+                            {% set row_class = 'table-danger' %}
+                            {% set alert_badge = '<span class="badge bg-danger ms-2">Vencido</span>' %}
+                        {% elif days_diff <= 30 %}
+                            {% set row_class = 'table-warning' %}
+                            {% set alert_badge = '<span class="badge bg-warning text-dark ms-2">Vence pronto</span>' %}
+                        {% endif %}
+                    {% endif %}
+                <tr class="{{ row_class }}">
+                    <td class="text-center">{{ loop.index }}</td>
+                    <td>{{ item.nombre_tipo }} {{ alert_badge|safe }}</td>
+                    <td>{{ item.descripcion or 'Sin descripción' }}</td>
+                    <td class="text-center">
+                        {{ item.fecha_emision.strftime('%d/%m/%Y') if item.fecha_emision else item.fecha_subida.strftime('%d/%m/%Y') }}
+                    </td>
+                    <td class="text-center">
+                        <a href="{{ url_for('legajo.visualizar_documento', documento_id=item.id_documento) }}"
+                           target="_blank"
+                           class="btn btn-sm btn-outline-info"
+                           title="Visualizar Documento: {{ item.nombre_archivo }}">
+                            <i class="bi bi-eye-fill"></i>
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="alert alert-light text-center" role="alert">
+        <i class="bi bi-info-circle me-2"></i>No hay documentos registrados en esta categoría.
+    </div>
+    {% endif %}
+{% endmacro %}
+
+{% block dashboard_content %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-primary">
+                <i class="bi bi-folder-symlink me-2"></i>Legajo Completo (Vista RRHH)
+            </h1>
+            <span class="badge bg-secondary">DNI: {{ legajo.personal.dni }}</span>
+            <span class="badge bg-info text-dark ms-2">Modo: SOLO LECTURA</span>
+        </div>
+        <div>
+            <a href="{{ url_for('rrhh.listar_personal') }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left-circle me-1"></i> Volver a la Lista
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+            <h6 class="m-0 fw-bold"><i class="bi bi-person-badge-fill me-2"></i>Información Principal</h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Nombres:</dt>
+                        <dd class="col-sm-8">{{ legajo.personal.nombres }}</dd>
+                        <dt class="col-sm-4">Apellidos:</dt>
+                        <dd class="col-sm-8">{{ legajo.personal.apellidos }}</dd>
+                        <dt class="col-sm-4">Fecha de Nac.:</dt>
+                        <dd class="col-sm-8">{{ legajo.personal.fecha_nacimiento.strftime('%d/%m/%Y') if legajo.personal.fecha_nacimiento else 'No registrado' }}</dd>
+                    </dl>
+                </div>
+                <div class="col-md-6">
+                    <dl class="row">
+                        <dt class="col-sm-4">Correo:</dt>
+                        <dd class="col-sm-8">{{ legajo.personal.email or 'No registrado' }}</dd>
+                        <dt class="col-sm-4">Teléfono:</dt>
+                        <dd class="col-sm-8">{{ legajo.personal.telefono or 'No registrado' }}</dd>
+                        <dt class="col-sm-4">Dirección:</dt>
+                        <dd class="col-sm-8">{{ legajo.personal.direccion or 'No registrado' }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4 class="mb-3">Secciones del Legajo</h4>
+    <div class="accordion" id="accordionLegajo">
+        {% for seccion in legajo_service.get_secciones_for_select() %}
+            {% set seccion_id = seccion[0]|int %}
+            {% set seccion_nombre = seccion[1] %}
+            {% set documents_in_section = legajo.documentos|selectattr('id_seccion', 'equalto', seccion_id)|list %}
+            <div class="accordion-item">
+                <h2 class="accordion-header">
+                    <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ seccion_id }}">
+                        {{ seccion_nombre }}
+                        <span class="badge rounded-pill bg-primary ms-auto me-2">{{ documents_in_section|length }} Doc(s)</span>
+                    </button>
+                </h2>
+                <div id="collapse{{ seccion_id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" data-bs-parent="#accordionLegajo">
+                    <div class="accordion-body">
+                        {{ render_table(documents_in_section, 'Documentos Registrados') }}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

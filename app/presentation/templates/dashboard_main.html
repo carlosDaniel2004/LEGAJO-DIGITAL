@@ -22,7 +22,7 @@
     </div>
     {% endif %}
 
-    {% if current_user.rol in ['AdministradorLegajos', 'RRHH', 'Sistemas'] %}
+    {% if current_user.rol in ['AdministradorLegajos', 'Sistemas'] %}
     <div class="col-md-6 col-lg-4">
         <a href="{{ url_for('legajo.listar_personal') }}" class="dashboard-card consult-legajo">
             <div class="card-icon">
@@ -31,6 +31,32 @@
                 <i class="bi bi-search card-overlay-icon-sm"></i> {# Icono superpuesto #}
             </div>
             <h4>Consultar Legajo</h4>
+            <div class="ingresar-link">ingresar ></div>
+        </a>
+    </div>
+    {% endif %}
+
+    {#Cambios grupo 3: solo para rrhh en el centro de pantalla#}
+    {% if current_user.rol in ['RRHH'] %}
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ url_for('rrhh.listar_personal') }}" class="dashboard-card consult-rrhh">
+            <div class="card-icon">
+                {# Icono para Consultar Legajo - Documento con lupa #}
+                <i class="bi bi-file-earmark-text"></i>
+                <i class="bi bi-search card-overlay-icon-sm"></i> {# Icono superpuesto #}
+            </div>
+            <h4>Consultar Legajo</h4>
+            <div class="ingresar-link">ingresar ></div>
+        </a>
+    </div>
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ url_for('rrhh.panel_rrhh') }}" class="dashboard-card panel-rrhh">
+            <div class="card-icon">
+                {# Icono para Consultar Legajo - Documento con lupa #}
+                <i class="bi bi-bar-chart-fill"></i>
+                <i class="bi bi-search card-overlay-icon-sm"></i> {# Icono superpuesto #}
+            </div>
+            <h4>Panel RRHH</h4>
             <div class="ingresar-link">ingresar ></div>
         </a>
     </div>

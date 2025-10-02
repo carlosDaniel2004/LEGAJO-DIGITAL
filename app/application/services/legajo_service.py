@@ -186,3 +186,9 @@ class LegajoService:
                 status_summary[personal_id]['expiring_soon'] += 1
         
         return status_summary
+    
+    # Grupo 3: Necesario para el panel de RRHH
+
+    def get_empleados_por_unidad(self):
+        return self._personal_repo.get_count_empleados_por_unidad()
+

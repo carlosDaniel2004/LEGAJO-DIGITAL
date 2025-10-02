@@ -1,0 +1,22 @@
+{% extends 'layouts/dashboard.html' %}
+{% block title %}Panel de Vistas RRHH{% endblock %}
+
+{% block dashboard_content %}
+<div class="mb-4">
+    <h1 class="h2">Panel de vistas de Recursos Humanos</h1>
+    <p class="text-muted">Bienvenido, {{ user.username }}. Aquí puede visualizar información de legajos.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ url_for('rrhh.listar_personal') }}" class="dashboard-card consult-legajo">
+            <div class="card-icon">
+                <i class="bi bi-file-earmark-text"></i>
+                <i class="bi bi-search card-overlay-icon-sm"></i>
+            </div>
+            <h4>Consultar Legajo</h4>
+            <div class="ingresar-link">ingresar ></div>
+        </a>
+    </div>
+</div>
+{% endblock %}

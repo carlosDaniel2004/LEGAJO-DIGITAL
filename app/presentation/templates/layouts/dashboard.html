@@ -21,7 +21,17 @@
                 <i class="bi bi-house-door-fill"></i>Inicio
             </a>
             
-            {% if current_user.rol in ['AdministradorLegajos', 'RRHH'] %}
+            {# Esto es para el botón de ver legajos de RRHH en el sidebar #}
+            {% if current_user.rol in ['RRHH'] %}
+            <a href="{{ url_for('rrhh.listar_personal') }}" class="list-group-item {% if request.endpoint in ['legajo.listar_personal', 'legajo.ver_legajo'] %}active{% endif %}">
+                <i class="bi bi-search"></i>Consultar Legajo
+            </a>
+            <a href="{{ url_for('rrhh.panel_rrhh') }}" class="list-group-item {% if request.endpoint == 'rrhh.panel_rrhh' %}active{% endif %}">
+                <i class="bi bi-bar-chart-fill"></i>Panel RRHH
+            </a>
+            {% endif %}
+
+            {% if current_user.rol in ['AdministradorLegajos'] %}
             <a href="{{ url_for('legajo.crear_personal') }}" class="list-group-item {% if request.endpoint == 'legajo.crear_personal' %}active{% endif %}">
                 <i class="bi bi-folder-plus"></i>Nuevo Legajo
             </a>

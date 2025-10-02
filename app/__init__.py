@@ -20,6 +20,9 @@ from .presentation.routes.auth_routes import auth_bp
 from .presentation.routes.legajo_routes import legajo_bp
 from .presentation.routes.sistemas_routes import sistemas_bp
 
+# AÑADIENDO LA RUTA DE RRHH GRUPO 3
+from app.presentation.routes.rrhh_routes import rrhh_bp
+
 # Inicialización de extensiones de Flask
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
@@ -79,6 +82,8 @@ def create_app():
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(legajo_bp, url_prefix='/legajos')
     app.register_blueprint(sistemas_bp, url_prefix='/sistemas')
+
+    app.register_blueprint(rrhh_bp) # añadiendo la ruta de RRHH grupo 3
 
     # --- Definición de Rutas Principales ---
     # Todas las rutas deben definirse dentro de la función create_app
