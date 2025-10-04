@@ -1,3 +1,4 @@
+# app/application/services/email_service.py
 # Importa la clase Message para crear correos y Flask's 'current_app' y 'render_template'.
 from flask_mail import Message
 from flask import current_app, render_template

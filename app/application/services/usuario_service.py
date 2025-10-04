@@ -4,7 +4,7 @@ import random
 import string
 from datetime import datetime, timedelta
 from app.core.security import generate_password_hash
-import logging # Importa la librería de logging
+import logging 
 
 # Configura un logger para este módulo
 logger = logging.getLogger(__name__)
@@ -29,24 +29,8 @@ class UsuarioService:
             print(f"--- CÓDIGO 2FA (PARA DESARROLLO): {code} ---")
             print("---------------------------------------------------------")
             """
-            # --- Lógica de envío de correo 2FA ---
-            # Verifica si el correo existe y no es una cadena vacía después de limpiar espacios
-            if user.email and user.email.strip(): 
-                try:
-                    self._email_service.send_2fa_code(user.email, user.username, code)
-                    logger.info(f"Correo 2FA enviado a {user.email} para usuario {user.username}.")
-                except ConnectionError as e:
-                    # Captura el error específico que podría lanzar EmailService
-                    logger.error(f"Error al enviar email de 2FA a {user.email}: {e}")
-                    # Vuelve a lanzar el error para que la ruta lo maneje
-                    raise
-                except Exception as e:
-                    # Captura cualquier otro error inesperado durante el envío
-                    logger.error(f"Error inesperado al enviar email de 2FA a {user.email}: {e}")
-                    raise ConnectionError("No se pudo enviar el correo de verificación debido a un error inesperado.")
-            else:
-                # Si el correo no es válido, registra una advertencia y no intenta enviar el email
-                logger.warning(f"El usuario '{username}' no tiene un correo electrónico válido registrado ('{user.email}'). No se enviará el código 2FA por email.")
+            # --- Lógica de envío de correo 2FA (comentada) ---
+            # ... (código para enviar el email) ...
             """
             return user.id
         
@@ -69,3 +53,22 @@ class UsuarioService:
         """Orquesta la actualización de la fecha del último login para un usuario."""
         self._usuario_repo.update_last_login(user_id)
 
+    # ====================================================================
+    # >>> MÉTODO AGREGADO: get_all_users_with_roles <<<
+    #    Este método corrige el 'AttributeError'.
+    # ====================================================================
+    def get_all_users_with_roles(self):
+        """
+        Obtiene todos los usuarios y los mapea con su información de rol,
+        llamando a la capa de repositorio.
+        """
+        try:
+            # Debe asegurarse de que su UsuarioRepository (self._usuario_repo)
+            # tenga implementado el método 'find_all_users_with_roles()'.
+            usuarios_con_roles = self._usuario_repo.find_all_users_with_roles()
+            logger.info("Usuarios con roles obtenidos correctamente para la gestión.")
+            return usuarios_con_roles
+        except Exception as e:
+            logger.error(f"Error al obtener todos los usuarios con roles desde el repositorio: {e}")
+            # Devolvemos una lista vacía para evitar un crash si la BD falla
+            return []

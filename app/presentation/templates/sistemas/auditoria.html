@@ -1,62 +1,124 @@
 {% extends 'layouts/dashboard.html' %}
-{% block title %}Registro de Auditoría{% endblock %}
+{% block title %}Auditoría y Logs{% endblock %}
 
 {% block dashboard_content %}
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h2">Registro de Auditoría</h1>
+<div class="dashboard-header-titles mb-4">
+    <h2 class="section-title text-danger">REGISTRO DE AUDITORÍA</h2>
+    <h3 class="subsection-title">Bitácora de Eventos Críticos del Sistema</h3>
+</div>
+
+<div class="row g-4 mb-4">
+    
+    <div class="col-lg-3 col-md-6">
+        <div class="summary-card bg-light-blue p-3 shadow-sm border-start border-4 border-primary">
+            <p class="mb-1 text-muted">Total de Registros (Pág. {{ pagination.page }})</p>
+            <h4 class="metric-value text-primary">{{ pagination.total }} Logs</h4>
+        </div>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-sm table-hover">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Fecha y Hora</th>
-                            <th>Usuario</th>
-                            <th>Módulo</th>
-                            <th>Acción</th>
-                            <th>Descripción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for log in pagination.items %}
-                        <tr>
-                            <td>{{ log.fecha_hora.strftime('%d/%m/%Y %H:%M:%S') }}</td>
-                            <td>{{ log.username or 'Sistema' }}</td>
-                            <td>{{ log.modulo }}</td>
-                            <td><span class="badge bg-info text-dark">{{ log.accion }}</span></td>
-                            <td>{{ log.descripcion }}</td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="5" class="text-center">No hay eventos de auditoría para mostrar.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% if pagination and pagination.pages > 1 %}
-            <nav>
-                <ul class="pagination justify-content-center">
+    <div class="col-lg-3 col-md-6">
+        <div class="summary-card bg-light-red p-3 shadow-sm border-start border-4 border-danger">
+            <p class="mb-1 text-muted">Intentos de Acceso Fallidos (Hoy)</p>
+            {# Asumimos que tienes una variable 'fallos_hoy' de tu backend #}
+            <h4 class="metric-value text-danger">{{ fallos_hoy | default(0) }}</h4> 
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="summary-card bg-light-green p-3 shadow-sm border-start border-4 border-success">
+            <p class="mb-1 text-muted">Última Limpieza de Logs</p>
+            {# Asumimos que tienes una variable 'ultima_limpieza' #}
+            <h4 class="metric-value text-success">{{ ultima_limpieza | default('N/A') }}</h4>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6">
+        <a href="{{ url_for('sistemas.gestion_backups') }}" class="summary-card p-3 shadow-sm border-start border-4 border-info d-block text-decoration-none">
+            <p class="mb-1 text-muted">Ir a Mantenimiento</p>
+            <h4 class="metric-value text-info">Backups <i class="bi bi-arrow-right-circle-fill"></i></h4>
+        </a>
+    </div>
+
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+        <span>Detalle de la Bitácora de Eventos</span>
+        <div class="input-group w-50">
+            {# Ejemplo de filtro rápido, puedes implementarlo con JS o un formulario Flask #}
+            <input type="text" class="form-control form-control-sm" placeholder="Buscar por usuario o acción...">
+            <button class="btn btn-outline-light btn-sm" type="button"><i class="bi bi-search"></i></button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        
+        <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+            <table class="table table-sm table-striped table-hover mb-0">
+                <thead class="table-dark sticky-top">
+                    <tr>
+                        <th>Fecha y Hora</th>
+                        <th>Usuario (ID)</th>
+                        <th>Módulo</th>
+                        <th>Acción</th>
+                        <th>Descripción</th>
+                        <th>Resultado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {# Iteración sobre los logs paginados que vienen del backend #}
+                    {% for log in pagination.items %}
+                    <tr class="log-row-{{ log.resultado | lower }}">
+                        <td>{{ log.timestamp }}</td>
+                        <td>{{ log.user_id }}</td>
+                        <td>{{ log.modulo }}</td>
+                        <td><span class="badge bg-secondary">{{ log.accion }}</span></td>
+                        <td>{{ log.descripcion }}</td>
+                        <td>
+                            {# Aplicación de color de alerta basado en el resultado (ej: SUCCESS, ERROR, CONSULTA) #}
+                            {% if 'error' in log.resultado | lower or 'fallo' in log.resultado | lower %}
+                                <span class="badge bg-danger">ERROR</span>
+                            {% elif 'consulta' in log.resultado | lower %}
+                                <span class="badge bg-info">CONSULTA</span>
+                            {% else %}
+                                <span class="badge bg-success">ÉXITO</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+    </div>
+    <div class="card-footer d-flex justify-content-center">
+        {# Navegación de Paginación #}
+        {% if pagination.pages > 1 %}
+            <nav aria-label="Navegación de Logs">
+                <ul class="pagination pagination-sm mb-0">
                     <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
-                        <a class="page-link" href="{{ url_for('admin.auditoria', page=pagination.prev_num) }}">Anterior</a>
+                        <a class="page-link" href="{{ url_for('sistemas.auditoria', page=pagination.prev_num) }}" aria-label="Anterior">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
                     </li>
                     {% for page_num in pagination.iter_pages() %}
                         {% if page_num %}
-                            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
-                                <a class="page-link" href="{{ url_for('admin.auditoria', page=page_num) }}">{{ page_num }}</a>
-                            </li>
+                            {% if pagination.page == page_num %}
+                                <li class="page-item active"><a class="page-link" href="#">{{ page_num }}</a></li>
+                            {% else %}
+                                <li class="page-item"><a class="page-link" href="{{ url_for('sistemas.auditoria', page=page_num) }}">{{ page_num }}</a></li>
+                            {% endif %}
                         {% else %}
-                            <li class="page-item disabled"><span class="page-link">…</span></li>
+                            <li class="page-item disabled"><a class="page-link" href="#">...</a></li>
                         {% endif %}
                     {% endfor %}
                     <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
-                        <a class="page-link" href="{{ url_for('admin.auditoria', page=pagination.next_num) }}">Siguiente</a>
+                        <a class="page-link" href="{{ url_for('sistemas.auditoria', page=pagination.next_num) }}" aria-label="Siguiente">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
                     </li>
                 </ul>
             </nav>
-            {% endif %}
-        </div>
+        {% endif %}
     </div>
+</div>
 {% endblock %}

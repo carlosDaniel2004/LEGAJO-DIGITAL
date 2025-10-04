@@ -9,7 +9,7 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('index')) # Asumimos que 'index' maneja la redirección post-login si ya está autenticado
     
     form = LoginForm()
     if form.validate_on_submit():
@@ -41,18 +41,28 @@ def verify_2fa():
         user = usuario_service.verify_2fa_code(user_id, form.code.data)
 
         if user:
-            # 1. Se actualiza el último login ANTES de iniciar la sesión.
             usuario_service.update_last_login(user_id)
-
-            # 2. Se inicia la sesión del usuario. Flask-Login volverá a cargar
-            #    al usuario con los datos actualizados.
             login_user(user, remember=True)
-
             session.pop('2fa_user_id', None)
             session.pop('2fa_username', None)
             
             flash(f'Bienvenido de nuevo, {user.nombre_completo or user.username}!', 'success')
-            return redirect(url_for('index'))
+            
+            # ------------------------------------------------------------------
+            # 🔑 CORRECCIÓN: Lógica de redirección basada en el rol
+            # ------------------------------------------------------------------
+            if user.rol == 'Sistemas':
+                # Redirige al Dashboard de Sistemas (el de las 6 tarjetas)
+                return redirect(url_for('sistemas.dashboard'))
+            elif user.rol == 'RRHH':
+                # Redirige a la ruta principal del módulo RRHH
+                # (Ajusta la ruta si es diferente, ej. rrhh.listar_personal)
+                return redirect(url_for('rrhh.dashboard')) 
+            else:
+                # Redirige al Dashboard General (la imagen que me enviaste)
+                return redirect(url_for('index'))
+            # ------------------------------------------------------------------
+            
         else:
             flash('Código de verificación incorrecto o expirado.', 'danger')
 

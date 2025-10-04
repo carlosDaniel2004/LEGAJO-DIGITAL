@@ -1,3 +1,4 @@
+# app/core/security.py
 # Importa las funciones de hashing y verificación de contraseñas de Werkzeug.
 from werkzeug.security import generate_password_hash as werkzeug_generate_hash
 from werkzeug.security import check_password_hash as werkzeug_check_hash
