@@ -3,6 +3,7 @@ from flask import Flask, redirect, url_for, current_app, render_template
 from flask_login import LoginManager, current_user, login_required
 from flask_wtf.csrf import CSRFProtect
 from flask_mail import Mail
+from app.presentation.routes.rrhh_routes import rrhh_bp
 
 from .config import Config
 from .database.connector import init_app_db

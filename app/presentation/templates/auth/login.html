@@ -10,6 +10,20 @@
             <h3 class="fw-bold">Legajo Digital DIRESA</h3>
             <p class="text-muted">HECHO POR MUÑOZ PACORI :V </p>
         </div>
+
+        {# --- INICIO DEL BLOQUE PARA MOSTRAR MENSAJES --- #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        {# --- FIN DEL BLOQUE PARA MOSTRAR MENSAJES --- #}
+
         <form method="post" novalidate>
             {{ form.hidden_tag() }}
             

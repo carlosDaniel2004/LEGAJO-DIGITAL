@@ -23,9 +23,11 @@ def login():
                 return redirect(url_for('auth.verify_2fa'))
             else:
                 flash('Usuario o contraseña incorrectos.', 'danger')
+                return redirect(url_for('auth.login'))
         except Exception as e:
             current_app.logger.error(f"Error inesperado en login: {e}")
             flash("Ocurrió un error inesperado. Por favor, intente de nuevo.", 'danger')
+            return redirect(url_for('auth.login'))
             
     return render_template('auth/login.html', form=form)
 

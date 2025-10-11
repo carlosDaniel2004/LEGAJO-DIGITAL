@@ -187,3 +187,16 @@ class LegajoService:
                 status_summary[personal_id]['expiring_soon'] += 1
         
         return status_summary
+
+    def get_expiring_documents_notifications(self, days_threshold=30):
+        """
+        Orquesta la obtención de una lista de notificaciones sobre documentos que están por vencer.
+        """
+        return self._personal_repo.find_expiring_documents(days_threshold)
+
+    def get_empleados_por_unidad(self):
+        """
+        Orquesta la obtención del conteo de empleados por cada unidad administrativa.
+        Este método es utilizado por el panel de RRHH para generar gráficos.
+        """
+        return self._personal_repo.count_empleados_por_unidad()

@@ -28,7 +28,7 @@ class SqlServerUsuarioRepository(IUsuarioRepository):
         cursor = conn.cursor()
         
         # Usa el SP corregido que devuelve todos los campos requeridos por el modelo Usuario
-        query = "{CALL p_obtener_usuarios_para_gestion}" 
+        query = "{CALL sp_listar_todos_los_usuarios}" 
         cursor.execute(query)
         
         results = [_row_to_dict(cursor, row) for row in cursor.fetchall()]
@@ -288,6 +288,25 @@ class SqlServerPersonalRepository(IPersonalRepository):
         cursor.execute("{CALL sp_listar_tipos_documento_por_seccion(?)}", id_seccion)
         # Devuelve directamente una lista de diccionarios
         return [{"id": row.id_tipo, "nombre": row.nombre_tipo} for row in cursor.fetchall()]      
+
+    def count_empleados_por_unidad(self):
+        """
+        Realiza una consulta para contar el número de empleados activos
+        en cada unidad administrativa.
+        """
+        conn = get_db_read()
+        cursor = conn.cursor()
+        query = """
+            SELECT ua.nombre AS nombre_unidad, COUNT(p.id_personal) AS total_empleados
+            FROM unidad_administrativa ua
+            JOIN personal p ON ua.id_unidad = p.id_unidad
+            WHERE p.activo = 1
+            GROUP BY ua.nombre
+            ORDER BY total_empleados DESC;
+        """
+        cursor.execute(query)
+        # Devuelve una lista de diccionarios, ideal para gráficos.
+        return [_row_to_dict(cursor, row) for row in cursor.fetchall()]
 
 # --- REPOSITORIO DE AUDITORÍA ---
 # Implementación completa y corregida del repositorio de auditoría.

@@ -92,22 +92,33 @@
 
             <div class="header-right-icons">
                 <div class="notification-bell dropdown">
-                    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownNotifications" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="dropdownNotifications" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-bell-fill"></i>
-                        <span class="badge bg-danger rounded-circle">1</span>
+                        {# Solo muestra el contador si hay notificaciones #}
+                        {% if notifications %}
+                        <span class="badge bg-danger rounded-circle">{{ notifications|length }}</span>
+                        {% endif %}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end text-small shadow" aria-labelledby="dropdownNotifications">
-                        <li><a class="dropdown-item" href="#">
-                            <div class="fw-bold">Contrato por vencer</div>
-                            <div class="small text-muted">Juan Pérez - Vence en 5 días</div>
-                        </a></li>
+                        {# Si hay notificaciones, las lista. Si no, muestra un mensaje. #}
+                        {% if notifications %}
+                            {% for doc in notifications %}
+                            <li><a class="dropdown-item" href="{{ url_for('legajo.ver_legajo', personal_id=doc.id_personal) }}">
+                                <div class="fw-bold">Doc. por vencer: {{ doc.nombre_archivo }}</div>
+                                <div class="small text-muted">{{ doc.apellidos }}, {{ doc.nombres }}</div>
+                                <div class="small text-danger">Vence: {{ doc.fecha_vencimiento.strftime('%d/%m/%Y') }}</div>
+                            </a></li>
+                            {% endfor %}
+                        {% else %}
+                            <li><a class="dropdown-item text-center small text-muted" href="#">No hay notificaciones</a></li>
+                        {% endif %}
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item text-center small text-muted" href="#">Ver todas las notificaciones</a></li>
                     </ul>
                 </div>
 
                 <div class="user-dropdown dropdown">
-                    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a href="#" class="d-flex align-items-center text-dark text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="bi bi-person-circle user-icon-header"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end text-small shadow" aria-labelledby="dropdownUser">
