@@ -1,3 +1,5 @@
+# RUTA: app/presentation/routes/report_routes.py
+
 from flask import Blueprint, redirect, render_template, current_app, send_file, flash, url_for
 from flask_login import login_required
 from app.decorators import role_required

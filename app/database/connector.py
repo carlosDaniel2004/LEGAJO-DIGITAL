@@ -1,3 +1,4 @@
+# app/database/connector.py
 # Importa la librería pyodbc para la conexión con SQL Server y Flask's 'g' y 'current_app'.
 import pyodbc
 from flask import g, current_app

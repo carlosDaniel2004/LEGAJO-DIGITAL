@@ -1,8 +1,8 @@
-{% extends "layouts/dashboard.html" %}
+{% extends 'layouts/dashboard.html' %}
 
 {% block title %}Solicitudes Pendientes{% endblock %}
 
-{% block content %}
+{% block dashboard_content %}
 <div class="container-fluid">
     <h1 class="h3 mb-4 text-gray-800">Solicitudes de Modificación Pendientes</h1>
 
@@ -11,69 +11,7 @@
             <h6 class="m-0 font-weight-bold text-primary">Solicitudes por Aprobar o Rechazar</h6>
         </div>
         <div class="card-body">
-            {% if requests %}
-                <div class="table-responsive">
-                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                        <thead>
-                            <tr>
-                                <th>Fecha de Solicitud</th>
-                                <th>DNI del Personal</th>
-                                <th>Nombre del Personal</th>
-                                <th>Usuario Solicitante</th>
-                                <th>Campo a Modificar</th>
-                                <th>Valor Anterior</th>
-                                <th>Valor Nuevo</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for req in requests %}
-                            <tr>
-                                <td>{{ req.fecha_solicitud.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                                <td>{{ req.dni }}</td>
-                                <td>{{ req.nombre_completo_personal }}</td>
-                                <td>{{ req.usuario_solicitante }}</td>
-                                <td><strong>{{ req.campo_modificado }}</strong></td>
-                                <td><span class="text-muted"><em>{{ req.valor_anterior or 'N/A' }}</em></span></td>
-                                <td><span class="text-primary"><strong>{{ req.valor_nuevo }}</strong></span></td>
-                                <td class="d-flex">
-                                    <a href="#" class="btn btn-success btn-icon-split btn-sm mr-2">
-                                        <span class="icon text-white-50"><i class="fas fa-check"></i></span>
-                                        <span class="text">Aprobar</span>
-                                    </a>
-                                    <a href="#" class="btn btn-danger btn-icon-split btn-sm">
-                                        <span class="icon text-white-50"><i class="fas fa-times"></i></span>
-                                        <span class="text">Rechazar</span>
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            {% else %}
-                <div class="alert alert-success text-center">
-                    <i class="fas fa-check-circle mr-2"></i> No hay solicitudes de modificación pendientes.
-                </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% extends "layouts/dashboard.html" %}
-
-{% block title %}Solicitudes Pendientes{% endblock %}
-
-{% block content %}
-<div class="container-fluid">
-    <h1 class="h3 mb-4 text-gray-800">Solicitudes de Modificación Pendientes</h1>
-
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Solicitudes por Aprobar o Rechazar</h6>
-        </div>
-        <div class="card-body">
+            {# Verifica si la variable 'requests' está presente (asumiendo que se llama 'requests' en el backend) #}
             {% if requests %}
                 <div class="table-responsive">
                     <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
@@ -116,7 +54,7 @@
                                             <span class="text">Rechazar</span>
                                         </button>
                                     </form>
-                                    </td>
+                                </td>
                             </tr>
                             {% endfor %}
                         </tbody>

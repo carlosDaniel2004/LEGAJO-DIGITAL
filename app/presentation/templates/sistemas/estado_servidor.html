@@ -1,0 +1,73 @@
+{% extends 'layouts/dashboard.html' %}
+{% block title %}Monitoreo de Rendimiento{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header-titles mb-4">
+    <h2 class="section-title text-info">ESTADO DEL SERVIDOR</h2>
+    <h3 class="subsection-title">Salud de CPU, Memoria y Conexiones a DB</h3>
+</div>
+
+<div class="row g-4 mb-4">
+    
+    {# Tarjeta 1: Uso de CPU #}
+    <div class="col-lg-3 col-md-6">
+        <div class="summary-card bg-light-red p-3 shadow-sm border-start border-4 border-danger">
+            <p class="mb-1 text-muted">Uso de CPU (Actual)</p>
+            {# Asumimos que la variable es 'cpu_usage' #}
+            <h4 class="metric-value text-danger">{{ cpu_usage | default('N/A') }}%</h4> 
+        </div>
+    </div>
+
+    {# Tarjeta 2: Uso de Memoria RAM #}
+    <div class="col-lg-3 col-md-6">
+        <div class="summary-card bg-light-blue p-3 shadow-sm border-start border-4 border-primary">
+            <p class="mb-1 text-muted">Memoria RAM Libre</p>
+            {# Asumimos que la variable es 'ram_free' #}
+            <h4 class="metric-value text-primary">{{ ram_free | default('N/A') }} GB</h4>
+        </div>
+    </div>
+
+    {# Tarjeta 3: Conexiones Activas a DB #}
+    <div class="col-lg-3 col-md-6">
+        <div class="summary-card bg-light-green p-3 shadow-sm border-start border-4 border-success">
+            <p class="mb-1 text-muted">Conexiones Activas a DB</p>
+            {# Asumimos que la variable es 'db_connections' #}
+            <h4 class="metric-value text-success">{{ db_connections | default(0) }}</h4>
+        </div>
+    </div>
+    
+    {# Tarjeta 4: Enlace de Retorno #}
+    <div class="col-lg-3 col-md-6">
+        <a href="{{ url_for('sistemas.dashboard') }}" class="summary-card p-3 shadow-sm border-start border-4 border-secondary d-block text-decoration-none">
+            <p class="mb-1 text-muted">Volver al Inicio</p>
+            <h4 class="metric-value text-secondary">Dashboard <i class="bi bi-arrow-left-circle-fill"></i></h4>
+        </a>
+    </div>
+
+</div>
+
+<div class="card shadow">
+    <div class="card-header bg-secondary text-white">
+        Registro de Logs de Salud del Sistema
+    </div>
+    <div class="card-body">
+        <p class="text-muted">La implementación requiere un servicio de infraestructura (ej. `INFRA_SERVICE`) para monitorear el sistema operativo y la base de datos.</p>
+        
+        {# Aquí iría una tabla de logs técnicos similar a la de auditoría, si tu backend los proporciona #}
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>Hora</th>
+                    <th>Métrica</th>
+                    <th>Valor</th>
+                    <th>Umbral</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td colspan="5" class="text-center text-secondary">Aún no hay datos de monitoreo en tiempo real.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,3 +1,4 @@
+# app/application/services/legajo_service.py
 # Importa la librería para calcular hashes de archivos.
 import hashlib
 from openpyxl import Workbook
@@ -186,9 +187,16 @@ class LegajoService:
                 status_summary[personal_id]['expiring_soon'] += 1
         
         return status_summary
-    
-    # Grupo 3: Necesario para el panel de RRHH
+
+    def get_expiring_documents_notifications(self, days_threshold=30):
+        """
+        Orquesta la obtención de una lista de notificaciones sobre documentos que están por vencer.
+        """
+        return self._personal_repo.find_expiring_documents(days_threshold)
 
     def get_empleados_por_unidad(self):
-        return self._personal_repo.get_count_empleados_por_unidad()
-
+        """
+        Orquesta la obtención del conteo de empleados por cada unidad administrativa.
+        Este método es utilizado por el panel de RRHH para generar gráficos.
+        """
+        return self._personal_repo.count_empleados_por_unidad()

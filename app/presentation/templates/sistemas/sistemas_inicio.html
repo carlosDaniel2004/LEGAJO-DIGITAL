@@ -1,0 +1,86 @@
+{% extends 'layouts/dashboard.html' %}
+{% block title %}Inicio - Administración del Sistema{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-header-titles mb-4">
+    <h2 class="section-title">ADMINISTRACIÓN DEL SISTEMA</h2>
+    <h3 class="subsection-title">MONITOREO, GESTIÓN Y SEGURIDAD</h3>
+</div>
+
+<div class="row g-4">
+    
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ url_for('sistemas.auditoria') }}" class="dashboard-card audit-card">
+            <div class="card-icon text-danger">
+                {# Icono para Auditoría - Lista de verificación #}
+                <i class="bi bi-journal-check"></i>
+            </div>
+            <h4>Auditoría y Logs</h4>
+            <p class="card-description">Revisa el registro detallado de transacciones críticas del sistema.</p>
+            <div class="ingresar-link">ingresar ></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ url_for('sistemas.gestionar_usuarios') }}" class="dashboard-card user-management-card">
+            <div class="card-icon text-warning">
+                {# Icono para Gestión de Usuarios - Persona con engranaje #}
+                <i class="bi bi-person-gear"></i>
+            </div>
+            <h4>Gestión de Roles y Usuarios</h4>
+            <p class="card-description">Administra permisos de acceso, roles y credenciales de la aplicación.</p>
+            <div class="ingresar-link">ingresar ></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        {# Enlace a una nueva ruta que liste el estado del servidor, conexiones, etc. #}
+        <a href="{{ url_for('sistemas.estado_servidor') }}" class="dashboard-card db-status-card">
+            <div class="card-icon text-success">
+                {# Icono para Estado del Servidor - CPU #}
+                <i class="bi bi-cpu"></i>
+            </div>
+            <h4>Monitoreo de Rendimiento</h4>
+            <p class="card-description">Verifica el estado de CPU, memoria y la salud general de la Base de Datos.</p>
+            <div class="ingresar-link">ingresar ></div>
+        </a>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ url_for('sistemas.gestion_backups') }}" class="dashboard-card backup-card">
+            <div class="card-icon text-info">
+                {# Icono para Backups - Nube con flecha de sincronización #}
+                <i class="bi bi-cloud-upload"></i>
+            </div>
+            <h4>Backups y Restauración</h4>
+            <p class="card-description">Administración de copias de seguridad y configuración de periodicidad.</p>
+            <div class="ingresar-link">ingresar ></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ url_for('sistemas.solicitudes_pendientes') }}" class="dashboard-card requests-card">
+            <div class="card-icon text-primary">
+                {# Icono para Solicitudes - Campana de notificación #}
+                <i class="bi bi-bell-fill"></i>
+            </div>
+            <h4>Solicitudes Pendientes</h4>
+            <p class="card-description">Revisión de peticiones de restablecimiento de acceso y permisos.</p>
+            <div class="ingresar-link">ingresar ></div>
+        </a>
+    </div>
+    
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ url_for('sistemas.errores') }}" class="dashboard-card errors-card">
+            <div class="card-icon text-danger">
+                {# Icono para Errores - Exclamación en círculo #}
+                <i class="bi bi-bug"></i>
+            </div>
+            <h4>Registro de Errores</h4>
+            <p class="card-description">Visualización y gestión de errores de aplicación en tiempo real (debugging).</p>
+            <div class="ingresar-link">ingresar ></div>
+        </a>
+    </div>
+
+</div>
+{% endblock %}

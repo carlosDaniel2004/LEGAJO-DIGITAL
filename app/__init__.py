@@ -1,10 +1,9 @@
-# RUTA: app/__init__.py
-
 import logging
 from flask import Flask, redirect, url_for, current_app, render_template
 from flask_login import LoginManager, current_user, login_required
 from flask_wtf.csrf import CSRFProtect
 from flask_mail import Mail
+from app.presentation.routes.rrhh_routes import rrhh_bp
 
 from .config import Config
 from .database.connector import init_app_db
@@ -13,15 +12,22 @@ from .application.services.email_service import EmailService
 from .application.services.usuario_service import UsuarioService
 from .application.services.legajo_service import LegajoService
 from .application.services.audit_service import AuditService
+
+from .application.services.solicitud_service import SolicitudService 
+from .application.services.backup_service import BackupService 
+
 from .infrastructure.persistence.sqlserver_repository import (
-    SqlServerUsuarioRepository, SqlServerPersonalRepository, SqlServerAuditoriaRepository
+    SqlServerUsuarioRepository, 
+    SqlServerPersonalRepository, 
+    SqlServerAuditoriaRepository,
+    SqlServerBackupRepository, 
+    SqlServerSolicitudRepository 
 )
+
 from .presentation.routes.auth_routes import auth_bp
 from .presentation.routes.legajo_routes import legajo_bp
 from .presentation.routes.sistemas_routes import sistemas_bp
-
-# AÑADIENDO LA RUTA DE RRHH GRUPO 3
-from app.presentation.routes.rrhh_routes import rrhh_bp
+from .presentation.routes.rrhh_routes import rrhh_bp
 
 # Inicialización de extensiones de Flask
 login_manager = LoginManager()
@@ -36,7 +42,7 @@ def load_user(user_id):
     """Carga el usuario para la sesión de Flask-Login."""
     repo = current_app.config.get('USUARIO_REPOSITORY')
     if repo:
-        return repo.find_by_id(int(user_id))
+        return repo.find_by_id(int(user_id)) 
     return None
 
 def create_app():
@@ -52,10 +58,8 @@ def create_app():
     )
     app.config.from_object(Config)
 
-    # Configuración de logging
     logging.basicConfig(level=logging.INFO)
 
-    # Inicialización de extensiones con la app
     init_app_db(app)
     login_manager.init_app(app)
     csrf.init_app(app)
@@ -63,17 +67,30 @@ def create_app():
 
     # Inyección de dependencias dentro del contexto de la aplicación
     with app.app_context():
+        # --- 1. Inicialización de Repositorios ---
         usuario_repo = SqlServerUsuarioRepository()
         personal_repo = SqlServerPersonalRepository()
         audit_repo = SqlServerAuditoriaRepository()
+        
+        # Inicialización de los nuevos repositorios
+        backup_repo = SqlServerBackupRepository() 
+        solicitud_repo = SqlServerSolicitudRepository()
         
         app.config['USUARIO_REPOSITORY'] = usuario_repo
         app.config['PERSONAL_REPOSITORY'] = personal_repo
         app.config['AUDIT_REPOSITORY'] = audit_repo
         
+        # --- 2. Inicialización de Servicios ---
         email_service = EmailService(mail)
-        audit_service = AuditService(audit_repo)
+        audit_service = AuditService(audit_repo) # Este es el servicio que necesitamos pasar
         
+        # 🔑 CORRECCIÓN CRÍTICA: Se pasa audit_service al constructor del BackupService
+        app.config['BACKUP_SERVICE'] = BackupService(backup_repo, app.config, audit_service)
+        
+        # Servicio de Solicitudes (necesario para la vista de Sistemas)
+        app.config['SOLICITUDES_SERVICE'] = SolicitudService(solicitud_repo)
+        
+        # Servicios existentes
         app.config['USUARIO_SERVICE'] = UsuarioService(usuario_repo, email_service)
         app.config['AUDIT_SERVICE'] = audit_service
         app.config['LEGAJO_SERVICE'] = LegajoService(personal_repo, audit_service)
@@ -83,17 +100,11 @@ def create_app():
     app.register_blueprint(legajo_bp, url_prefix='/legajos')
     app.register_blueprint(sistemas_bp, url_prefix='/sistemas')
 
-    app.register_blueprint(rrhh_bp) # añadiendo la ruta de RRHH grupo 3
+    app.register_blueprint(rrhh_bp) 
 
     # --- Definición de Rutas Principales ---
-    # Todas las rutas deben definirse dentro de la función create_app
-    
     @app.route('/')
     def index():
-        """
-        Ruta raíz. Redirige al login si no está autenticado,
-        o al dashboard principal si lo está.
-        """
         if not current_user.is_authenticated:
             return redirect(url_for('auth.login'))
         return redirect(url_for('main_dashboard'))
@@ -101,10 +112,6 @@ def create_app():
     @app.route('/dashboard')
     @login_required
     def main_dashboard():
-        """
-        Muestra la página principal del dashboard con las tarjetas de opciones,
-        según el diseño del prototipo.
-        """
         return render_template('dashboard_main.html')
         
     return app
