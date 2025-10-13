@@ -194,9 +194,25 @@ class LegajoService:
         """
         return self._personal_repo.find_expiring_documents(days_threshold)
 
+    # Para el grafico de personal por unidad administrativa
     def get_empleados_por_unidad(self):
         """
         Orquesta la obtención del conteo de empleados por cada unidad administrativa.
         Este método es utilizado por el panel de RRHH para generar gráficos.
         """
         return self._personal_repo.count_empleados_por_unidad()
+
+    # Para el grafico de personal Activos vs Inactivos
+    def get_empleados_activos_inactivos(self):
+        query = """
+            SELECT 
+                CASE WHEN activo = 1 THEN 'Activos' ELSE 'Inactivos' END AS estado,
+                COUNT(*) AS cantidad
+            FROM personal
+            GROUP BY CASE WHEN activo = 1 THEN 'Activos' ELSE 'Inactivos' END
+        """
+        return self._personal_repo.fetch_all(query)
+
+    # Para el grafico de personal segun Genero
+    def get_empleados_por_sexo(self):
+        return self._personal_repo.get_count_empleados_por_sexo()

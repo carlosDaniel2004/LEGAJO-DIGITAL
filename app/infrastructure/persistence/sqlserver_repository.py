@@ -289,11 +289,17 @@ class SqlServerPersonalRepository(IPersonalRepository):
         # Devuelve directamente una lista de diccionarios
         return [{"id": row.id_tipo, "nombre": row.nombre_tipo} for row in cursor.fetchall()]      
 
+
     def count_empleados_por_unidad(self):
         """
         Realiza una consulta para contar el número de empleados activos
         en cada unidad administrativa.
         """
+    # GRUPO 3: Algunas agregaciones para el panel de graficos rrhh
+
+    # Para el grafico de perosonal por unidad administrativa
+    def get_count_empleados_por_unidad(self):
+        """Consulta SQL que cuenta empleados por unidad administrativa."""
         conn = get_db_read()
         cursor = conn.cursor()
         query = """
@@ -305,8 +311,45 @@ class SqlServerPersonalRepository(IPersonalRepository):
             ORDER BY total_empleados DESC;
         """
         cursor.execute(query)
+
         # Devuelve una lista de diccionarios, ideal para gráficos.
         return [_row_to_dict(cursor, row) for row in cursor.fetchall()]
+
+        # fetchall devuelve tuplas, pero usamos zip para dict
+        columns = [col[0] for col in cursor.description]
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
+    
+    # Para el grafico de persoonal Activos vs Inactivos
+    def fetch_all(self, query):
+        conn = get_db_read()
+        cursor = conn.cursor()
+        cursor.execute(query)
+        columns = [col[0] for col in cursor.description]
+        results = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        return results
+
+    # Para el gráfico de personal por sexo
+    def get_count_empleados_por_sexo(self):
+        """Consulta SQL que cuenta empleados por sexo."""
+        conn = get_db_read()
+        cursor = conn.cursor()
+        query = """
+            SELECT 
+                CASE 
+                    WHEN sexo = 'M' THEN 'Masculino'
+                    WHEN sexo = 'F' THEN 'Femenino'
+                    ELSE 'No especificado'
+                END AS sexo,
+                COUNT(p.id_personal) AS cantidad
+            FROM personal p
+            GROUP BY sexo
+            ORDER BY cantidad DESC;
+        """
+        cursor.execute(query)
+        columns = [col[0] for col in cursor.description]
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+
 
 # --- REPOSITORIO DE AUDITORÍA ---
 # Implementación completa y corregida del repositorio de auditoría.
