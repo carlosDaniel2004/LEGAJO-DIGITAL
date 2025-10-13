@@ -20,7 +20,7 @@ def dashboard():
     """
     return render_template('rrhh/dashboard.html', user=current_user)
 
-# Aquí se agregarán más rutas para el rol de RRHH en el futuro.
+
 
 # Acontinución se tiene la funcionalidad de listar y ver legajos, solo lectura para RRHH
 

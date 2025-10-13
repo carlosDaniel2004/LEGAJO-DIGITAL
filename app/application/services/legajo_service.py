@@ -194,9 +194,8 @@ class LegajoService:
         """
         return self._personal_repo.find_expiring_documents(days_threshold)
 
+    
+     # GRUPO 3: GRAFICOS PARA EL USUARIO DE RRHH
+
     def get_empleados_por_unidad(self):
-        """
-        Orquesta la obtención del conteo de empleados por cada unidad administrativa.
-        Este método es utilizado por el panel de RRHH para generar gráficos.
-        """
-        return self._personal_repo.count_empleados_por_unidad()
+        return self._personal_repo.get_count_empleados_por_unidad()
