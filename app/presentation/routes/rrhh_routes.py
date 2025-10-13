@@ -110,8 +110,17 @@ def panel_rrhh():
     # DEBUG temporal para consola
     print("DEBUG empleados_unidad:", empleados_unidad)
 
+    # Acontinuación se tiene: Distribución de empleados activos vs inactivos
+    empleados_estado = legajo_service.get_empleados_activos_inactivos()
+    print("DEBUG empleados_estado:", empleados_estado)
+
+    # Acontinuación se tiene: Distribución de empleados segun genero
+    empleados_sexo = legajo_service.get_empleados_por_sexo()
+
     # 👇 Aquí devolvemos la plantilla
     return render_template(
         'rrhh/panel.html',
-        empleados_unidad=empleados_unidad
+        empleados_unidad=empleados_unidad,
+        empleados_estado=empleados_estado,
+        empleados_sexo=empleados_sexo
     )

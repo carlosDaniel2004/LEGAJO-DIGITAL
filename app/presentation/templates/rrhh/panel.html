@@ -54,63 +54,64 @@
 <!-- Cargar Chart.js desde CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const ctx = document.getElementById('empleadosUnidadChart').getContext('2d');
-        
-        const labels = {{ empleados_unidad | map(attribute='nombre_unidad') | list | tojson | safe }};
-        const dataValues = {{ empleados_unidad | map(attribute='cantidad') | list | tojson | safe }};
 
-        // Colores para el gráfico
-        const backgroundColors = [
-            '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
-            '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF',
-            '#7CFC00', '#20B2AA', '#FF69B4', '#8A2BE2',
-            '#00FF7F', '#1E90FF', '#FFD700', '#FF6347'
-        ];
+        const labels = {{ empleados_unidad | map(attribute = 'nombre_unidad') | list | tojson | safe
+    }};
+    const dataValues = {{ empleados_unidad | map(attribute = 'cantidad') | list | tojson | safe }};
 
-        const chart = new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: labels,
-                datasets: [{
-                    data: dataValues,
-                    backgroundColor: backgroundColors,
-                    borderColor: '#ffffff',
-                    borderWidth: 2,
-                    hoverOffset: 15
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                cutout: '60%',
-                plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: {
-                            padding: 20,
-                            usePointStyle: true,
-                            pointStyle: 'circle'
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.parsed;
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = ((value / total) * 100).toFixed(1);
-                                return `${label}: ${value} (${percentage}%)`;
-                            }
-                        }
+    // Colores para el gráfico
+    const backgroundColors = [
+        '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+        '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF',
+        '#7CFC00', '#20B2AA', '#FF69B4', '#8A2BE2',
+        '#00FF7F', '#1E90FF', '#FFD700', '#FF6347'
+    ];
+
+    const chart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: labels,
+            datasets: [{
+                data: dataValues,
+                backgroundColor: backgroundColors,
+                borderColor: '#ffffff',
+                borderWidth: 2,
+                hoverOffset: 15
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '60%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
                     }
                 },
-                animation: {
-                    animateScale: true,
-                    animateRotate: true
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            const label = context.label || '';
+                            const value = context.parsed;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
                 }
+            },
+            animation: {
+                animateScale: true,
+                animateRotate: true
             }
-        });
+        }
+    });
     });
 </script>
 
@@ -119,9 +120,217 @@
         box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
         border: 1px solid rgba(0, 0, 0, 0.125);
     }
+
     .card-header {
         background-color: #f8f9fa;
         border-bottom: 1px solid rgba(0, 0, 0, 0.125);
     }
 </style>
+
+<!--PARA EL GRAFICO DE PERSONAL ACTIVOS vs INACTIVOS-->
+
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Distribución de Empleados por Estado</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="chartEstado" width="400" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Resumen de Estados</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Total de empleados:</strong>
+                    <span class="badge bg-info fs-6 float-end">
+                        {{ empleados_estado | sum(attribute='cantidad') }}
+                    </span>
+                </div>
+                <div class="mb-3">
+                    <strong>Tipos de estado:</strong>
+                    <span class="badge bg-warning fs-6 float-end">
+                        {{ empleados_estado | length }}
+                    </span>
+                </div>
+                <hr>
+                <h6>Detalle por estado:</h6>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    {% for estado in empleados_estado %}
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="small">
+                            <i class="fas fa-user me-2"
+                                style="color: {{ '#4BC0C0' if estado.estado == 'Activo' else '#FF6384' }}"></i>
+                            {{ estado.estado }}
+                        </span>
+                        <span class="badge {{ 'bg-success' if estado.estado == 'Activo' else 'bg-secondary' }}">
+                            {{ estado.cantidad }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const estadoData = {{ empleados_estado | tojson
+    }};
+    const labelsEstado = estadoData.map(item => item.estado);
+    const valuesEstado = estadoData.map(item => item.cantidad);
+
+    const ctxEstado = document.getElementById('chartEstado').getContext('2d');
+
+    // Colores únicos para este gráfico (diferentes al primero)
+    const estadoColors = ['#4BC0C0', '#FF6384', '#9966FF', '#FF9F40', '#FFCD56'];
+
+    const chartEstado = new Chart(ctxEstado, {
+        type: 'pie',  // Diferente al doughnut del primer gráfico
+        data: {
+            labels: labelsEstado,
+            datasets: [{
+                data: valuesEstado,
+                backgroundColor: estadoColors,
+                borderColor: '#ffffff',
+                borderWidth: 3,
+                hoverOffset: 20
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',  // Posición diferente
+                    labels: {
+                        padding: 15,
+                        usePointStyle: true,
+                        pointStyle: 'rect'
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            const label = context.label || '';
+                            const value = context.parsed;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: ${value} empleados (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            animation: {
+                animateScale: true,
+                animateRotate: true,
+                duration: 2000  // Animación más larga
+            }
+        }
+    });
+    });
+</script>
+
+
+<!-- DISTRIBUCIÓN POR SEXO -->
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Distribución de Empleados por Sexo</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="chartSexo" width="400" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Resumen de Género</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <strong>Total de empleados:</strong>
+                    <span class="badge bg-info fs-6 float-end">
+                        {{ empleados_sexo | sum(attribute='cantidad') }}
+                    </span>
+                </div>
+                <div class="mb-3">
+                    <strong>Géneros registrados:</strong>
+                    <span class="badge bg-warning fs-6 float-end">
+                        {{ empleados_sexo | length }}
+                    </span>
+                </div>
+                <hr>
+                <h6>Detalle:</h6>
+                <div style="max-height: 300px; overflow-y: auto;">
+                    {% for sexo in empleados_sexo %}
+                    <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+                        <span class="small">{{ sexo.sexo }}</span>
+                        <span class="badge bg-secondary">{{ sexo.cantidad }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const dataSexo = {{ empleados_sexo | tojson }};
+    const labelsSexo = dataSexo.map(item => item.sexo);
+    const valuesSexo = dataSexo.map(item => item.cantidad);
+
+    const ctxSexo = document.getElementById('chartSexo').getContext('2d');
+
+    const sexoColors = ['#36A2EB', '#FF6384', '#FFCE56']; // Azul, Rosa, Amarillo
+
+    new Chart(ctxSexo, {
+        type: 'bar',
+        data: {
+            labels: labelsSexo,
+            datasets: [{
+                label: 'Cantidad de empleados',
+                data: valuesSexo,
+                backgroundColor: sexoColors,
+                borderColor: '#fff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const value = context.parsed.y;
+                            const percent = ((value / total) * 100).toFixed(1);
+                            return `${context.label}: ${value} (${percent}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+
+
 {% endblock %}
