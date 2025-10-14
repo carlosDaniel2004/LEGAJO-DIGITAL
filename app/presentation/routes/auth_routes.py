@@ -59,7 +59,7 @@ def verify_2fa():
             elif user.rol == 'RRHH':
                 # Redirige a la ruta principal del módulo RRHH
                 # (Ajusta la ruta si es diferente, ej. rrhh.listar_personal)
-                return redirect(url_for('rrhh.dashboard')) 
+                return redirect(url_for('rrhh.inicio_rrhh')) 
             else:
                 # Redirige al Dashboard General (la imagen que me enviaste)
                 return redirect(url_for('index'))

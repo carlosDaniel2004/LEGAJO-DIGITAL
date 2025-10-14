@@ -195,7 +195,26 @@ class LegajoService:
         return self._personal_repo.find_expiring_documents(days_threshold)
 
     
-     # GRUPO 3: GRAFICOS PARA EL USUARIO DE RRHH
+    # GRUPO 3: GRAFICOS PARA EL USUARIO DE RRHH
 
+    # Para el grafico de empleados por unidad administrativa
     def get_empleados_por_unidad(self):
+        """
+        Orquesta la obtención del conteo de empleados por cada unidad administrativa.
+        Este método es utilizado por el panel de RRHH para generar gráficos.
+        """
         return self._personal_repo.get_count_empleados_por_unidad()
+
+    # Para el grafico de empleados segun el genero 
+    def get_empleados_por_sexo(self):
+        """
+        Orquesta la obtención del conteo de empleados por sexo.
+        """
+        return self._personal_repo.get_count_empleados_por_sexo()
+
+    # Para el grafico de empleados activos vs inactivos
+    def get_empleados_activos_inactivos(self):
+        """
+        Orquesta la obtención del conteo de empleados activos vs inactivos.
+        """
+        return self._personal_repo.get_count_empleados_activos_inactivos()

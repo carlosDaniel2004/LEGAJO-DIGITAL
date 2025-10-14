@@ -40,7 +40,7 @@ def get_tipos_documento_by_seccion(seccion_id):
 
 @legajo_bp.route('/dashboard')
 @login_required
-@role_required('AdministradorLegajos', 'RRHH')
+@role_required('AdministradorLegajos')
 def dashboard():
     return render_template('admin/dashboard.html', username=current_user.username)
 

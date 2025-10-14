@@ -289,8 +289,9 @@ class SqlServerPersonalRepository(IPersonalRepository):
         # Devuelve directamente una lista de diccionarios
         return [{"id": row.id_tipo, "nombre": row.nombre_tipo} for row in cursor.fetchall()]      
 
-    # Algunas agregaciones para el panel de graficos rrhh
+    # GRUPO 3: Algunas agregaciones para el panel de graficos rrhh
 
+    # Para consultar empleados por unidad
     def get_count_empleados_por_unidad(self):
         """Consulta SQL que cuenta empleados por unidad administrativa."""
         conn = get_db_read()
@@ -304,6 +305,47 @@ class SqlServerPersonalRepository(IPersonalRepository):
         """
         cursor.execute(query)
         # fetchall devuelve tuplas, pero usamos zip para dict
+        columns = [col[0] for col in cursor.description]
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
+    
+    # Para consultar empleados segun genero
+    def get_count_empleados_por_sexo(self):
+        """Consulta SQL que cuenta empleados por sexo."""
+        conn = get_db_read()
+        cursor = conn.cursor()
+        query = """
+            SELECT 
+                CASE 
+                    WHEN sexo = 'M' THEN 'Masculino'
+                    WHEN sexo = 'F' THEN 'Femenino'
+                    ELSE 'No especificado'
+                END AS sexo,
+                COUNT(id_personal) AS cantidad
+            FROM personal
+            GROUP BY sexo
+            ORDER BY cantidad DESC;
+        """
+        cursor.execute(query)
+        columns = [col[0] for col in cursor.description]
+        return [dict(zip(columns, row)) for row in cursor.fetchall()]
+    
+    # Para consultar empleados activos vs inactivos
+    def get_count_empleados_activos_inactivos(self):
+        """Consulta SQL que cuenta empleados activos vs inactivos."""
+        conn = get_db_read()
+        cursor = conn.cursor()
+        query = """
+            SELECT 
+                CASE 
+                    WHEN activo = 1 THEN 'Activos' 
+                    ELSE 'Inactivos' 
+                END AS estado,
+                COUNT(id_personal) AS cantidad
+            FROM personal
+            GROUP BY activo
+            ORDER BY estado DESC;
+        """
+        cursor.execute(query)
         columns = [col[0] for col in cursor.description]
         return [dict(zip(columns, row)) for row in cursor.fetchall()]
 

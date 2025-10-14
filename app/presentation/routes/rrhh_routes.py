@@ -11,14 +11,14 @@ from app.decorators import role_required
 # Todas las rutas definidas aquí comenzarán con /rrhh
 rrhh_bp = Blueprint('rrhh', __name__, url_prefix='/rrhh')
 
-@rrhh_bp.route('/dashboard')
+@rrhh_bp.route('/inicio_rrhh')
 @login_required
 @role_required('RRHH')
-def dashboard():
+def inicio_rrhh():
     """
     Dashboard principal para el rol de Recursos Humanos.
     """
-    return render_template('rrhh/dashboard.html', user=current_user)
+    return render_template('rrhh/inicio_rrhh.html', user=current_user)
 
 
 
