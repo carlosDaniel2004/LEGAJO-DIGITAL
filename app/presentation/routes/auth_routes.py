@@ -72,6 +72,8 @@ def verify_2fa():
 
 @auth_bp.route('/logout')
 def logout():
+    # Limpia todos los mensajes flash pendientes de la sesión anterior
+    session.clear() 
     logout_user()
     flash('Has cerrado la sesión correctamente.', 'info')
     return redirect(url_for('auth.login'))

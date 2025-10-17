@@ -164,10 +164,13 @@ def subir_documento(personal_id):
             current_app.logger.error(f"Error al subir documento para personal {personal_id}: {e}")
             flash(f'Ocurrió un error al subir el documento: {e}', 'danger')
     else:
+        # Si la validación del formulario falla, registra el error y flashea los mensajes.
+        error_str = "; ".join([f"{field}: {', '.join(errors)}" for field, errors in form.errors.items()])
+        current_app.logger.warning(f"Fallo de validación al subir documento para personal {personal_id}: {error_str}")
         for field, errors in form.errors.items():
             for error in errors:
                 flash(f"Error en el campo '{getattr(form, field).label.text}': {error}", 'danger')
-                break
+                break # Muestra solo el primer error por campo para no saturar
     return redirect(url_for('legajo.ver_legajo', personal_id=personal_id))
 
 
@@ -176,13 +179,23 @@ def subir_documento(personal_id):
 @login_required
 @role_required('AdministradorLegajos')
 def eliminar_personal(personal_id):
+    legajo_service = current_app.config['LEGAJO_SERVICE']
     try:
-        legajo_service = current_app.config['LEGAJO_SERVICE']
+        # Se intenta desactivar el legajo
         legajo_service.delete_personal_by_id(personal_id, current_user.id)
         flash('El legajo ha sido desactivado correctamente.', 'success')
+
+    except ValueError as ve:
+        # Se captura el error específico si la persona no existe
+        current_app.logger.warning(f"Intento de eliminar un legajo no existente ({personal_id}): {ve}")
+        # Se muestra el mensaje de error del servicio directamente al usuario
+        flash(str(ve), 'warning')
+
     except Exception as e:
+        # Se captura cualquier otro error inesperado
         current_app.logger.error(f"Error al eliminar legajo {personal_id}: {e}")
         flash(f'Ocurrió un error al desactivar el legajo: {e}', 'danger')
+        
     return redirect(url_for('legajo.listar_personal'))
 
 @legajo_bp.route('/personal/<int:personal_id>/editar', methods=['GET', 'POST'])
@@ -290,10 +303,23 @@ def visualizar_documento(documento_id):
             if not mimetype:
                 mimetype = 'application/octet-stream'
 
+            # Lista de tipos de archivo que los navegadores pueden mostrar de forma nativa
+            SAFE_INLINE_MIMETYPES = [
+                'application/pdf',
+                'image/jpeg',
+                'image/png',
+                'image/gif',
+                'image/webp',
+                'text/plain'
+            ]
+
+            # Si el tipo de archivo no es seguro para mostrar, forzamos la descarga
+            should_be_attachment = mimetype not in SAFE_INLINE_MIMETYPES
+
             return send_file(
                 io.BytesIO(document['data']),
                 mimetype=mimetype,
-                as_attachment=False, # ¡CRUCIAL! Esto le dice al navegador que lo visualice en línea
+                as_attachment=should_be_attachment, # ¡Ahora es dinámico!
                 download_name=document['filename']
             )
         except Exception as e:

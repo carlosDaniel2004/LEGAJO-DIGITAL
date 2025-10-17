@@ -53,7 +53,7 @@ class DocumentoForm(FlaskForm):
     descripcion = TextAreaField('Descripción (Opcional)', validators=[Optional(), Length(max=500)])
     archivo = FileField('Seleccionar Archivo', validators=[
         DataRequired(message="Debe seleccionar un archivo."),
-        FileAllowed(['pdf', 'png', 'jpg', 'jpeg'], '¡Solo se permiten archivos de imagen y PDF!')
+        FileAllowed(['pdf', 'png', 'jpg', 'jpeg', 'docx', 'xlsx'], '¡Solo se permiten archivos PDF, de imagen (PNG, JPG) o de Office (DOCX, XLSX)!')
     ])
     submit = SubmitField('Subir Documento')
 

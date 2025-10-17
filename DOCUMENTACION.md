@@ -196,3 +196,173 @@ Para consolidar la comprensión de la arquitectura, sigamos el viaje de una peti
 Este flujo asegura que todas las solicitudes sean manejadas de manera consistente y que la lógica de negocio esté centralizada en los servicios de aplicación y el dominio.
 
 ---
+
+### 9.2. Módulos de RRHH y Legajos (`rrhh_routes.py` y `legajo_routes.py`)
+
+Estos dos módulos forman el núcleo funcional de la gestión de legajos. `rrhh_routes.py` se centra en las vistas de alto nivel para el personal de Recursos Humanos, mientras que `legajo_routes.py` maneja las operaciones detalladas de CRUD (Crear, Leer, Actualizar, Eliminar) sobre los legajos y sus componentes.
+
+#### 9.2.1. Listado y Consulta de Personal (Rol: RRHH, AdminLegajos, Sistemas)
+
+-   **Ruta Principal**: `/personal` (accesible desde `rrhh/personal` o `legajo/personal`)
+-   **Función**: `listar_personal()`
+-   **Descripción**: Muestra una lista paginada de todo el personal registrado. Permite filtrar por DNI y nombres. También muestra el estado de los documentos de cada empleado (si tienen documentos vencidos o por vencer).
+-   **Flujo de Datos**:
+    1.  El controlador llama a `legajo_service.get_all_personal_paginated()` para obtener la lista de empleados.
+    2.  También llama a `legajo_service.check_document_status_for_all_personal()` para obtener las alertas de documentos.
+    3.  Ambos métodos de servicio llaman a sus respectivos procedimientos almacenados en el repositorio (`sp_listar_personal_paginado` y `sp_listar_documentos_con_vencimiento`).
+    4.  La plantilla `admin/listar_personal.html` o `rrhh/listar_personal.html` renderiza la tabla.
+
+#### 9.2.2. Creación de un Nuevo Legajo (Rol: AdminLegajos)
+
+-   **Ruta Principal**: `/personal/nuevo`
+-   **Función**: `crear_personal()`
+-   **Descripción**: Presenta un formulario (`PersonalForm`) para registrar a un nuevo empleado en el sistema.
+-   **Flujo de Datos**:
+    1.  Al cargar la página, se llama a `legajo_service.get_unidades_for_select()` para poblar el menú desplegable de unidades administrativas.
+    2.  Tras enviar el formulario, el controlador llama a `legajo_service.register_new_personal()`.
+    3.  El servicio invoca al procedimiento `sp_registrar_personal` en el repositorio y luego registra la acción en la bitácora a través del `audit_service`.
+
+#### 9.2.3. Visualización de un Legajo Completo (Rol: RRHH, AdminLegajos, Sistemas)
+
+-   **Ruta Principal**: `/personal/<id>`
+-   **Función**: `ver_legajo()`
+-   **Descripción**: Muestra una vista detallada de toda la información de un empleado, incluyendo sus datos personales, contratos, estudios, documentos, etc.
+-   **Flujo de Datos**:
+    1.  El controlador llama a `legajo_service.get_personal_details()`.
+    2.  El servicio ejecuta el procedimiento `sp_obtener_legajo_completo_por_personal`, que devuelve múltiples conjuntos de resultados (uno por cada sección del legajo).
+    3.  La plantilla `admin/ver_legajo_completo.html` organiza y muestra toda esta información.
+
+#### 9.2.4. Gestión de Documentos (Rol: AdminLegajos)
+
+-   **Ruta Principal**: `/personal/<id>/documento/subir` (y otras para eliminar/ver)
+-   **Función**: `subir_documento()`, `eliminar_documento()`, `visualizar_documento()`
+-   **Descripción**: Permite añadir, eliminar (lógicamente) y visualizar los archivos adjuntos en el legajo de un empleado.
+-   **Flujo de Datos (Subida)**:
+    1.  El formulario de subida (`DocumentoForm`) se procesa en la ruta `subir_documento()`.
+    2.  Se llama a `legajo_service.upload_document_to_personal()`, que valida el archivo (tamaño, tipo), calcula su hash y lo pasa al repositorio.
+    3.  El repositorio ejecuta `sp_subir_documento` para guardar el archivo en la base de datos.
+    4.  La acción se registra en la bitácora.
+
+#### 9.2.5. Exportación a Excel (Rol: RRHH, AdminLegajos, Sistemas)
+
+-   **Ruta Principal**: `/personal/exportar/general`
+-   **Función**: `exportar_lista_general_excel()`
+-   **Descripción**: Genera y descarga un archivo Excel con un reporte completo de todo el personal.
+-   **Flujo de Datos**:
+    1.  El controlador llama a `legajo_service.generate_general_report_excel()`.
+    2.  El servicio obtiene los datos del repositorio (usando `sp_generar_reporte_general_personal`) y utiliza la librería `openpyxl` para construir el archivo Excel en memoria.
+    3.  La acción se audita y el archivo se envía al navegador para su descarga.
+
+---
+
+### 9.3. Módulo de Autenticación (`auth_routes.py`)
+
+Este módulo es responsable de gestionar la identidad y el acceso de los usuarios. Maneja el inicio de sesión, la verificación en dos pasos (2FA) y el cierre de sesión.
+
+#### 9.3.1. Inicio de Sesión
+
+-   **Ruta Principal**: `/login`
+-   **Función**: `login()`
+-   **Descripción**: Presenta el formulario de inicio de sesión y procesa las credenciales del usuario.
+-   **Flujo de Datos**:
+    1.  El usuario envía su nombre de usuario y contraseña a través del `LoginForm`.
+    2.  El controlador llama a `usuario_service.attempt_login()`.
+    3.  El servicio busca al usuario en la base de datos (usando `sp_obtener_usuario_por_username`) y verifica la contraseña hasheada.
+    4.  Si las credenciales son **incorrectas**, se muestra un mensaje de error y se redirige de vuelta al login.
+    5.  Si las credenciales son **correctas**, el servicio genera un código 2FA, lo guarda en la base de datos (hasheado) y lo envía por correo electrónico al usuario.
+    6.  El ID del usuario se guarda en la sesión (`session['2fa_user_id']`) y se redirige al usuario a la página de verificación 2FA.
+
+#### 9.3.2. Verificación en Dos Pasos (2FA)
+
+-   **Ruta Principal**: `/login/verify`
+-   **Función**: `verify_2fa()`
+-   **Descripción**: Pide al usuario el código de 6 dígitos enviado a su correo para completar el inicio de sesión.
+-   **Flujo de Datos**:
+    1.  El usuario introduce el código en el `TwoFactorForm`.
+    2.  El controlador llama a `usuario_service.verify_2fa_code()`.
+    3.  El servicio compara el código introducido con el hash guardado en la base de datos y verifica que no haya expirado.
+    4.  Si el código es **incorrecto**, se muestra un mensaje de error.
+    5.  Si el código es **correcto**, se completa el proceso:
+        -   Se actualiza la fecha de `ultimo_login` del usuario (usando `sp_actualizar_ultimo_login`).
+        -   Se inicia la sesión del usuario con la función `login_user()` de Flask-Login.
+        -   Se limpia la sesión de 2FA.
+        -   Se redirige al usuario al dashboard correspondiente a su rol.
+
+#### 9.3.3. Cierre de Sesión
+
+-   **Ruta Principal**: `/logout`
+-   **Función**: `logout()`
+-   **Descripción**: Cierra la sesión activa del usuario.
+-   **Flujo de Datos**:
+    1.  El controlador llama a la función `logout_user()` de Flask-Login, que elimina los datos del usuario de la sesión.
+    2.  Se muestra un mensaje de confirmación.
+    3.  Se redirige al usuario a la página de login.
+
+---
+
+## 10. Configuración y Variables de Entorno
+
+La configuración de la aplicación se gestiona a través de un archivo `.env` en la raíz del proyecto, que es cargado por el objeto `Config` en `config.py`.
+
+-   **`SECRET_KEY`**: Una cadena larga y aleatoria usada por Flask para firmar criptográficamente las sesiones de usuario. Es vital para la seguridad.
+-   **`DB_DRIVER`**: El driver de ODBC que se usará para la conexión. Generalmente `{ODBC Driver 17 for SQL Server}`.
+-   **`DB_SERVER`**: La dirección IP o el nombre de host de la instancia de SQL Server.
+-   **`DB_DATABASE`**: El nombre de la base de datos a la que se conectará la aplicación.
+-   **`DB_USERNAME` / `DB_PASSWORD`**: Las credenciales del usuario de la aplicación. Este usuario debe tener los permisos mínimos necesarios definidos en los scripts de roles de la base de datos.
+-   **`DB_USERNAME_SA` / `DB_PASSWORD_SA`**: Credenciales de un usuario con privilegios elevados (como `sa` o un administrador). Se utilizan exclusivamente para scripts de mantenimiento que se ejecutan fuera de la aplicación, como `resetearEmail.py`.
+-   **`MAIL_*`**: Variables para configurar el servidor de correo SMTP, necesarias para enviar los códigos de la autenticación en dos pasos (2FA).
+
+## 11. Componentes Principales y Utilidades
+
+El proyecto cuenta con varios componentes transversales que dan soporte a toda la aplicación.
+
+### 11.1. Decoradores (`app/decorators.py`)
+
+-   **`@role_required(*roles)`**: Este es el decorador de seguridad principal de la aplicación. Se coloca encima de una definición de ruta para restringir el acceso solo a los usuarios que posean uno de los roles especificados. Si un usuario no cumple con el requisito, se le muestra un mensaje de error y se le redirige.
+
+### 11.2. Conector de Base de Datos (`app/database/connector.py`)
+
+-   Este módulo abstrae la gestión de la conexión a la base de datos. Utiliza la librería `pyodbc` para crear y gestionar un "pool" de conexiones. Su principal responsabilidad es proporcionar una conexión funcional al resto de la aplicación (específicamente a los repositorios) sin que estos necesiten conocer los detalles de la cadena de conexión.
+
+### 11.3. Paginación (`app/utils/pagination.py`)
+
+-   **`SimplePagination`**: Una clase de utilidad que encapsula la lógica de la paginación. Recibe la lista de resultados de la página actual, el número de página, los elementos por página y el total de registros. Con esta información, calcula automáticamente si hay una página siguiente/anterior y genera los números de página para los controles de navegación, simplificando enormemente el código en las plantillas.
+
+## 12. Estructura del Frontend
+
+El frontend está construido con un sistema de plantillas Jinja2 y utiliza el framework Bootstrap para el diseño responsivo.
+
+### 12.1. Herencia de Plantillas
+
+La estructura de herencia es clave para evitar la duplicación de código HTML.
+
+1.  **`base.html`**: Es la plantilla raíz. Define la estructura HTML básica (`<html>`, `<head>`, `<body>`), enlaza los archivos CSS y JS principales, y define los bloques (`block`) que las plantillas hijas pueden sobrescribir.
+2.  **`dashboard.html`**: Hereda de `base.html`. Define la estructura visual común para todas las páginas internas del sistema, incluyendo la barra de navegación superior (header), la barra lateral (sidebar) y el pie de página (footer). Define un bloque `dashboard_content` para que las páginas específicas inserten su contenido.
+3.  **Páginas de Módulo (ej. `sistemas/auditoria.html`)**: Heredan de `dashboard.html` y solo necesitan rellenar el bloque `dashboard_content` con su contenido específico (tablas, formularios, etc.), reutilizando toda la estructura circundante.
+
+### 12.2. Activos Estáticos (`app/presentation/static`)
+
+-   **`css/`**: Contiene las hojas de estilo. `prototipo_style.css` es el archivo principal con los estilos personalizados de la aplicación.
+-   **`js/`**: Archivos JavaScript para la interactividad del cliente.
+-   **`img/`**: Logos e imágenes utilizados en la interfaz.
+-   **`vendor/`**: Librerías de terceros del lado del cliente, como jQuery y Bootstrap.
+
+## 13. Estrategia de Manejo de Errores
+
+La aplicación emplea una estrategia de manejo de errores en varias capas:
+
+-   **Validación de Formularios**: Los errores de entrada del usuario (campos vacíos, formatos incorrectos) se capturan a través de `Flask-WTF` y se muestran junto al campo correspondiente en el formulario.
+-   **Excepciones Esperadas**: Errores de negocio (ej. "DNI ya existe") se capturan en los controladores (`try...except`) y se muestran al usuario a través de mensajes `flash`.
+-   **Errores Inesperados**: Cualquier excepción no controlada se captura en un nivel superior. Se registra en la bitácora con la acción 'ERROR' (visible en el panel de Sistemas) y se muestra un mensaje genérico al usuario ("Ocurrió un error inesperado"). Esto evita exponer detalles técnicos sensibles al usuario final.
+
+## 14. Consideraciones para Despliegue en Producción
+
+Para llevar esta aplicación a un entorno de producción, se deben considerar los siguientes puntos:
+
+-   **Servidor WSGI**: El servidor de desarrollo de Flask (`app.run()`) no es adecuado para producción. Se debe utilizar un servidor WSGI robusto como **Gunicorn** (en Linux) o **Waitress** (en Windows).
+-   **Variables de Entorno**: El archivo `.env` no debe subirse al repositorio de código. En un servidor de producción, estas variables se deben configurar directamente en el sistema operativo o a través del panel de control del servicio de hosting.
+-   **Modo Debug**: La variable `DEBUG` de Flask debe estar establecida en `False` en producción para evitar la exposición de información sensible de depuración.
+-   **Gestión de Activos Estáticos**: Para un mejor rendimiento, se podría configurar un servidor web como Nginx para servir los archivos estáticos directamente, liberando al servidor de la aplicación de esa tarea.
+-   **Seguridad de la Base de Datos**: Asegurarse de que la base de datos no sea accesible públicamente desde internet y que el usuario de la aplicación tenga únicamente los permisos definidos en los roles, siguiendo el principio de mínimo privilegio.
+
+---

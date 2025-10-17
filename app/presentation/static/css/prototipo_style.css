@@ -140,13 +140,13 @@ body {
 /* -------------------------------------- */
 .prototipo-header {
     background-color: var(--color-header-bg);
-    padding: 1rem 2rem; /* Más padding horizontal */
+    padding: 0.5rem 1.5rem; /* Padding ajustado */
     border-bottom: 2px solid var(--color-header-border);
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* CLAVE: Distribuye el espacio */
     align-items: center;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Sombra suave */
-    position: sticky; /* Sticky header */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    position: sticky;
     top: 0;
     z-index: 1000;
 }
@@ -157,77 +157,46 @@ body {
     color: var(--color-texto-principal);
     font-size: 1.5em;
     padding: 0;
-    margin-right: 15px; /* Espacio a la derecha del botón */
+    flex-shrink: 0; /* Evita que se encoja */
 }
 
 .prototipo-header .header-center-logos {
     display: flex;
     align-items: center;
-    flex-grow: 1; /* Permite que ocupe el espacio central */
-    justify-content: last baseline; /* Centra los logos */
-    margin-right: 50px; /* Ajuste para mover el grupo ligeramente a la izquierda */
+    justify-content: center; /* Centra los logos en su espacio */
+    flex-grow: 1; /* Ocupa todo el espacio central disponible */
+    gap: 20px; /* Espacio entre los logos */
 }
 
-.prototipo-header .diresa-brand-header,
-.prototipo-header .minsa-brand-header {
-    display: flex;
-    align-items: center;
-    color: var(--color-texto-principal);
-}
-
-/* Tamaño independiente para el logo de DIRESA en la cabecera */
-.prototipo-header .diresa-brand-header img {
-    max-height: 80px; /* Tamaño más grande para este logo */
-    width: auto;
-}
-
-/* Tamaño independiente para el logo del Ministerio de Salud en la cabecera */
+.prototipo-header .diresa-brand-header img,
 .prototipo-header .minsa-brand-header img {
-    max-height: 80px; /* Tamaño un poco más grande para este logo */
+    max-height: 50px; /* Altura consistente para los logos */
     width: auto;
-}
-
-.prototipo-header .diresa-brand-header {
-    margin-right: 420px; /* Espacio entre los dos bloques de logos */
-}
-
-.prototipo-header .diresa-text-header,
-.prototipo-header .minsa-brand-header h4,
-.prototipo-header .minsa-brand-header p {
-    margin-left: 100px;
-}
-
-.prototipo-header .minsa-brand-header h4 {
-    color: var(--color-rojo-minsa); /* Color de "PERÚ" */
-    margin-bottom: 0;
-}
-.prototipo-header .minsa-brand-header p {
-    font-size: 0.8em;
-    margin-bottom: 0;
 }
 
 .prototipo-header .header-right-icons {
     display: flex;
     align-items: center;
+    gap: 20px; /* Espacio entre la campana y el perfil */
+    flex-shrink: 0; /* Evita que se encoja */
 }
 
 .prototipo-header .notification-bell {
     position: relative;
-    margin-right: 20px;
-    font-size: 3.2em;
+    font-size: 1.5em; /* Tamaño ajustado */
     color: var(--color-texto-principal);
 }
 
 .prototipo-header .notification-bell .badge {
     position: absolute;
     top: -5px;
-    right: -5px;
+    right: -10px;
     font-size: 0.6em;
     padding: .35em .6em;
 }
 
 .prototipo-header .user-icon-header {
-    font-size: 3.8em;
+    font-size: 1.8em; /* Tamaño ajustado */
     color: var(--color-texto-principal);
 }
 

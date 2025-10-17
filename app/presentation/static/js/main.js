@@ -1,14 +1,15 @@
-// Espera a que todo el contenido del DOM esté cargado antes de ejecutar el script.
+// RUTA: app/presentation/static/js/main.js
+
+// Espera a que todo el contenido del DOM esté cargado.
 window.addEventListener('DOMContentLoaded', event => {
-    // Busca el botón que controla el menú lateral.
-    const sidebarToggle = document.body.querySelector('#menu-toggle');
+    // Lógica para el botón de mostrar/ocultar la barra lateral
+    const sidebarToggle = document.body.querySelector('#sidebarToggle');
     if (sidebarToggle) {
-        // Añade un 'event listener' para el evento 'click'.
         sidebarToggle.addEventListener('click', event => {
-            // Previene el comportamiento por defecto del botón.
             event.preventDefault();
-            // Añade o quita la clase 'toggled' al contenedor principal para mostrar/ocultar el menú.
             document.getElementById('wrapper').classList.toggle('toggled');
         });
     }
-}); 
+
+    // Puedes añadir más lógica de JavaScript global aquí en el futuro.
+});
