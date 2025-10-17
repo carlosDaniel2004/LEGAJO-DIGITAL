@@ -1,9 +1,33 @@
 {% extends 'layouts/dashboard.html' %}
-{% block title %}Panel de Gestión de Legajos{% endblock %}
+{% block title %}Panel de Administrador de Legajos{% endblock %}
 
 {% block dashboard_content %}
 <div class="mb-4">
-    <h1 class="h2">Bienvenido, {{ username }}</h1>
-    <p class="text-muted">Desde este panel puede gestionar los legajos del personal.</p>
+    <h1 class="h2">Panel de Administrador de Legajos</h1>
+    <p class="text-muted">Bienvenido, {{ username }}. Seleccione una opción para comenzar.</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ url_for('legajo.crear_personal') }}" class="dashboard-card new-legajo">
+            <div class="card-icon">
+                <i class="bi bi-folder-plus"></i>
+            </div>
+            <h4>Nuevo Legajo</h4>
+            <p class="card-description">Registrar un nuevo empleado en el sistema.</p>
+            <div class="ingresar-link">Ingresar ></div>
+        </a>
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        <a href="{{ url_for('legajo.listar_personal') }}" class="dashboard-card consult-legajo">
+            <div class="card-icon">
+                <i class="bi bi-search"></i>
+            </div>
+            <h4>Consultar Legajo</h4>
+            <p class="card-description">Buscar, ver y administrar legajos existentes.</p>
+            <div class="ingresar-link">Ingresar ></div>
+        </a>
+    </div>
 </div>
 {% endblock %}

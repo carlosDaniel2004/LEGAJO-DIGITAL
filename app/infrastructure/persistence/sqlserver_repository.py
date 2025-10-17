@@ -297,15 +297,43 @@ class SqlServerPersonalRepository(IPersonalRepository):
         conn = get_db_read()
         cursor = conn.cursor()
         query = """
-            SELECT ua.nombre AS nombre_unidad, COUNT(p.id_personal) AS total_empleados
+            SELECT ua.nombre AS nombre_unidad, COUNT(p.id_personal) AS cantidad
             FROM unidad_administrativa ua
             JOIN personal p ON ua.id_unidad = p.id_unidad
             WHERE p.activo = 1
             GROUP BY ua.nombre
-            ORDER BY total_empleados DESC;
+            ORDER BY cantidad DESC;
         """
         cursor.execute(query)
         # Devuelve una lista de diccionarios, ideal para gráficos.
+        return [_row_to_dict(cursor, row) for row in cursor.fetchall()]
+
+    def count_empleados_por_estado(self):
+        """Cuenta el número de empleados activos e inactivos."""
+        conn = get_db_read()
+        cursor = conn.cursor()
+        query = """
+            SELECT 
+                CASE WHEN activo = 1 THEN 'Activos' ELSE 'Inactivos' END AS estado,
+                COUNT(id_personal) AS cantidad
+            FROM personal
+            GROUP BY activo;
+        """
+        cursor.execute(query)
+        return [_row_to_dict(cursor, row) for row in cursor.fetchall()]
+
+    def count_empleados_por_sexo(self):
+        """Cuenta el número de empleados por sexo."""
+        conn = get_db_read()
+        cursor = conn.cursor()
+        query = """
+            SELECT 
+                CASE WHEN sexo = 'M' THEN 'Masculino' WHEN sexo = 'F' THEN 'Femenino' ELSE 'No especificado' END AS sexo,
+                COUNT(id_personal) AS cantidad
+            FROM personal
+            GROUP BY sexo;
+        """
+        cursor.execute(query)
         return [_row_to_dict(cursor, row) for row in cursor.fetchall()]
 
 # --- REPOSITORIO DE AUDITORÍA ---
@@ -352,8 +380,8 @@ class SqlServerBackupRepository:
     def run_db_backup(self, db_name, file_path):
         try:
             db_server = os.getenv('DB_SERVER')
-            db_username = os.getenv('DB_USERNAME_WRITE') 
-            db_password = os.getenv('DB_PASSWORD_WRITE')
+            db_username = os.getenv('DB_USERNAME_SA') 
+            db_password = os.getenv('DB_PASSWORD_SA')
             if not all([db_server, db_username, db_password]):
                 raise ValueError("Variables de BD no configuradas en .env")
             backup_query = f"BACKUP DATABASE [{db_name}] TO DISK = N'{file_path}' WITH STATS = 10;"

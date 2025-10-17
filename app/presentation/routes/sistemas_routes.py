@@ -79,20 +79,38 @@ def crear_usuario():
 @login_required
 @role_required('Sistemas')
 def editar_usuario(user_id):
-    usuario_service = current_app.config['USUARIO_SERVICE']
-    user = usuario_service.get_user_by_id(user_id)
-    if not user:
-        flash('Usuario no encontrado.', 'danger')
-        return redirect(url_for('sistemas.gestionar_usuarios'))
-    form = UserManagementForm(obj=user)
-    if form.validate_on_submit():
-        try:
+    print("--- DEBUG: INTENTANDO ACCEDER A LA FUNCIÓN EDITAR_USUARIO ---")
+    import traceback
+    try:
+        usuario_service = current_app.config['USUARIO_SERVICE']
+        user = usuario_service.get_user_by_id(user_id)
+        if not user:
+            flash('Usuario no encontrado.', 'danger')
+            return redirect(url_for('sistemas.gestionar_usuarios'))
+        
+        form = UserManagementForm(obj=user)
+        
+        # Lógica para poblar los roles en el formulario
+        # Asumimos que el servicio puede proveer una lista de roles
+        # roles = usuario_service.get_all_roles() 
+        # form.id_rol.choices = [(r.id, r.nombre) for r in roles]
+
+        if form.validate_on_submit():
             usuario_service.update_user(user_id, form.data)
             flash('Usuario actualizado con éxito.', 'success')
             return redirect(url_for('sistemas.gestionar_usuarios'))
-        except Exception as e:
-            flash(f'Error al actualizar usuario: {e}', 'danger')
-    return render_template('sistemas/editar_usuario.html', form=form, user=user)
+        
+        return render_template('sistemas/editar_usuario.html', form=form, user=user)
+
+    except Exception as e:
+        # Bloque de depuración para forzar la visibilidad del error
+        error_trace = traceback.format_exc()
+        current_app.logger.error(f"ERROR CRÍTICO EN EDITAR_USUARIO: {e}\n{error_trace}")
+        print(f"!!!!!!!!!!!!!! ERROR DETECTADO EN EDITAR_USUARIO !!!!!!!!!!!!!!")
+        print(error_trace)
+        print(f"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        flash(f"Ocurrió un error grave al cargar la página de edición. Revise la terminal.", 'danger')
+        return redirect(url_for('sistemas.gestionar_usuarios'))
 
 
 @sistemas_bp.route('/usuarios/reset_password/<int:user_id>', methods=['POST'])

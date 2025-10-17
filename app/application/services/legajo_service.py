@@ -200,3 +200,11 @@ class LegajoService:
         Este método es utilizado por el panel de RRHH para generar gráficos.
         """
         return self._personal_repo.count_empleados_por_unidad()
+
+    def get_empleados_activos_inactivos(self):
+        """Orquesta la obtención del conteo de empleados por estado (activo/inactivo)."""
+        return self._personal_repo.count_empleados_por_estado()
+
+    def get_empleados_por_sexo(self):
+        """Orquesta la obtención del conteo de empleados por sexo."""
+        return self._personal_repo.count_empleados_por_sexo()

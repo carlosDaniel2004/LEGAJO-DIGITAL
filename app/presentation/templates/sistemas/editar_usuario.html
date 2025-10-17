@@ -3,19 +3,19 @@
 
 {% block title %}Editar Usuario{% endblock %}
 
-{% block content %}
+{% block dashboard_content %}
 <div class="container-fluid">
-    <h1 class="h3 mb-4 text-gray-800">Editar Usuario: {{ user_to_edit.username }}</h1>
+    <h1 class="h3 mb-4 text-gray-800">Editar Usuario: {{ user.username }}</h1>
 
     <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Asignar Nuevo Rol</h6>
         </div>
         <div class="card-body">
-            <p><strong>Usuario:</strong> {{ user_to_edit.username }}</p>
-            <p><strong>Rol Actual:</strong> {{ user_to_edit.rol }}</p>
+            <p><strong>Usuario:</strong> {{ user.username }}</p>
+            <p><strong>Rol Actual:</strong> {{ user.rol }}</p>
             <hr>
-            <form method="POST" action="{{ url_for('sistemas.editar_usuario', user_id=user_to_edit.id) }}">
+            <form method="POST" action="{{ url_for('sistemas.editar_usuario', user_id=user.id) }}">
                 {{ form.csrf_token }}
                 
                 <div class="form-group row">

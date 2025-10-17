@@ -57,11 +57,11 @@ def verify_2fa():
                 # Redirige al Dashboard de Sistemas (el de las 6 tarjetas)
                 return redirect(url_for('sistemas.dashboard'))
             elif user.rol == 'RRHH':
-                # Redirige a la ruta principal del módulo RRHH
-                # (Ajusta la ruta si es diferente, ej. rrhh.listar_personal)
-                return redirect(url_for('rrhh.dashboard')) 
+                return redirect(url_for('rrhh.inicio_rrhh')) 
+            elif user.rol == 'AdministradorLegajos':
+                return redirect(url_for('legajo.dashboard'))
             else:
-                # Redirige al Dashboard General (la imagen que me enviaste)
+                # Redirige a una página de índice general si el rol no coincide
                 return redirect(url_for('index'))
             # ------------------------------------------------------------------
             

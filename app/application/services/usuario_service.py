@@ -53,6 +53,10 @@ class UsuarioService:
         """Orquesta la actualización de la fecha del último login para un usuario."""
         self._usuario_repo.update_last_login(user_id)
 
+    def get_user_by_id(self, user_id):
+        """Obtiene un usuario por su ID."""
+        return self._usuario_repo.find_by_id(user_id)
+
     # ====================================================================
     # >>> MÉTODO AGREGADO: get_all_users_with_roles <<<
     #    Este método corrige el 'AttributeError'.
