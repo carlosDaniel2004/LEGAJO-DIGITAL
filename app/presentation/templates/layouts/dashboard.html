@@ -27,8 +27,8 @@
                 {% set active_test = 'sistemas.dashboard' %}
             {% elif current_user.rol == 'RRHH' %}
                 {# Asumimos que RRHH va a su panel principal #}
-                {% set HOME_URL = url_for('rrhh.panel_rrhh') %}
-                {% set active_test = 'rrhh.panel_rrhh' %}
+                {% set HOME_URL = url_for('rrhh.inicio_rrhh') %}
+                {% set active_test = 'rrhh.inicio_rrhh' %}
             {% elif current_user.rol == 'AdministradorLegajos' %}
                 {# Asumimos que AdministradorLegajos va al listado de legajos #}
                 {% set HOME_URL = url_for('legajo.listar_personal') %}
@@ -44,13 +44,23 @@
             
             {# 2. OPCIONES ESPECÍFICAS DE CADA ROL #}
 
-            {# --- Opciones para Legajos / RRHH --- #}
-            {% if current_user.rol in ['AdministradorLegajos', 'RRHH'] %}
+            {# --- Opciones para Legajos --- #}
+            {% if current_user.rol == 'AdministradorLegajos' %}
             <a href="{{ url_for('legajo.crear_personal') }}" class="list-group-item {% if request.endpoint == 'legajo.crear_personal' %}active{% endif %}">
                 <i class="bi bi-folder-plus"></i>Nuevo Legajo
             </a>
             <a href="{{ url_for('legajo.listar_personal') }}" class="list-group-item {% if request.endpoint in ['legajo.listar_personal', 'legajo.ver_legajo'] %}active{% endif %}">
                 <i class="bi bi-search"></i>Consultar Legajo
+            </a>
+            {% endif %}
+
+            {# --- Opciones para RRHH --- #}
+            {% if current_user.rol == 'RRHH' %}
+            <a href="{{ url_for('rrhh.listar_personal') }}" class="list-group-item {% if request.endpoint in ['rrhh.listar_personal', 'rrhh.ver_legajo'] %}active{% endif %}">
+                <i class="bi bi-search"></i>Consultar Legajos
+            </a>
+            <a href="{{ url_for('rrhh.panel_rrhh') }}" class="list-group-item {% if request.endpoint == 'rrhh.panel_rrhh' %}active{% endif %}">
+                <i class="bi bi-graph-up"></i>Estadísticas
             </a>
             {% endif %}
 

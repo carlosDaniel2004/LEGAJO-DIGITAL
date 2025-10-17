@@ -11,16 +11,16 @@ from app.decorators import role_required
 # Todas las rutas definidas aquí comenzarán con /rrhh
 rrhh_bp = Blueprint('rrhh', __name__, url_prefix='/rrhh')
 
-@rrhh_bp.route('/dashboard')
+@rrhh_bp.route('/inicio_rrhh')
 @login_required
 @role_required('RRHH')
-def dashboard():
+def inicio_rrhh():
     """
     Dashboard principal para el rol de Recursos Humanos.
     """
-    return render_template('rrhh/dashboard.html', user=current_user)
+    return render_template('rrhh/inicio_rrhh.html', user=current_user)
 
-# Aquí se agregarán más rutas para el rol de RRHH en el futuro.
+
 
 # Acontinución se tiene la funcionalidad de listar y ver legajos, solo lectura para RRHH
 
@@ -110,8 +110,17 @@ def panel_rrhh():
     # DEBUG temporal para consola
     print("DEBUG empleados_unidad:", empleados_unidad)
 
+    # Acontinuación se tiene: Distribución de empleados activos vs inactivos
+    empleados_estado = legajo_service.get_empleados_activos_inactivos()
+    print("DEBUG empleados_estado:", empleados_estado)
+
+    # Acontinuación se tiene: Distribución de empleados segun genero
+    empleados_sexo = legajo_service.get_empleados_por_sexo()
+
     # 👇 Aquí devolvemos la plantilla
     return render_template(
         'rrhh/panel.html',
-        empleados_unidad=empleados_unidad
+        empleados_unidad=empleados_unidad,
+        empleados_estado=empleados_estado,
+        empleados_sexo=empleados_sexo
     )

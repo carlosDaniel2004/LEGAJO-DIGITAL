@@ -1,0 +1,164 @@
+{% extends 'layouts/dashboard.html' %} {% block title %}Panel RRHH -
+Dashboard{% endblock %} {% block dashboard_content %}
+
+<!-- Título centrado -->
+<div class="card shadow-sm border-0 mb-4">
+   <div class="card-body text-center py-4">
+      <h1 class="display-6 text-primary fw-semibold mb-2">
+         <i class="bi bi-people-fill me-2"></i>Recursos Humanos
+      </h1>
+      <p class="text-muted fs-5 mb-0">
+         Bienvenido, <strong>{{ user.username }}</strong>
+      </p>
+   </div>
+</div>
+
+<!-- Acciones principales -->
+<div class="row g-4 mb-5">
+   <div class="col-md-6 col-lg-4">
+      <a
+         href="{{ url_for('rrhh.listar_personal') }}"
+         class="dashboard-card consult-legajo"
+      >
+         <div class="card-icon text-primary mb-3">
+            <i class="bi bi-search"></i>
+         </div>
+         <h4>Consultar Legajos</h4>
+         <p class="text-muted">Busque y visualice información de empleados</p>
+         <div class="ingresar-link">
+            <span>Ingresar</span>
+            <i class="bi bi-arrow-right ms-1"></i>
+         </div>
+      </a>
+   </div>
+
+   <div class="col-md-6 col-lg-4">
+      <a
+         href="{{ url_for('rrhh.panel_rrhh') }}"
+         class="dashboard-card statistics"
+      >
+         <div class="card-icon text-info mb-3">
+            <i class="bi bi-graph-up"></i>
+         </div>
+         <h4>Estadísticas</h4>
+         <p class="text-muted">Visualice gráficos y métricas del personal</p>
+         <div class="ingresar-link">
+            <span>Ver</span>
+            <i class="bi bi-arrow-right ms-1"></i>
+         </div>
+      </a>
+   </div>
+
+   <div class="col-md-6 col-lg-4">
+      <a
+         href="{{ url_for('rrhh.exportar_empleados_excel') }}"
+         class="dashboard-card reports"
+      >
+         <div class="card-icon text-success mb-3">
+            <i class="bi bi-file-earmark-excel"></i>
+         </div>
+         <h4>Exportar a Excel</h4>
+         <p class="text-muted">Descargue lista completa de empleados</p>
+         <div class="ingresar-link">
+            <span>Descargar</span>
+            <i class="bi bi-arrow-right ms-1"></i>
+         </div>
+      </a>
+   </div>
+</div>
+
+<!-- Información del sistema -->
+<div class="row">
+   <div class="col-12">
+      <div class="card shadow-sm border-0">
+         <div class="card-header bg-light border-0">
+            <h5 class="card-title mb-0 text-center">
+               <i class="bi bi-info-circle text-primary me-2"></i>
+               Acerca del Sistema
+            </h5>
+         </div>
+         <div class="card-body text-center">
+            <p class="mb-0">
+               Sistema de Gestión de Legajos - Módulo RRHH |
+               <strong>Acceso de solo lectura:</strong> Consulta y visualización
+               de información
+            </p>
+         </div>
+      </div>
+   </div>
+</div>
+
+<style>
+   .dashboard-card {
+      display: block;
+      padding: 2.5rem 2rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.3s ease;
+      border-left: 4px solid #007bff;
+      height: 100%;
+      text-align: center;
+   }
+
+   .dashboard-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+      text-decoration: none;
+   }
+
+   .dashboard-card.statistics {
+      border-left-color: #0dcaf0;
+   }
+
+   .dashboard-card.reports {
+      border-left-color: #198754;
+   }
+
+   .dashboard-card h4 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+      color: #212529;
+   }
+
+   .dashboard-card p {
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+   }
+
+   .card-icon {
+      font-size: 3rem;
+      transition: transform 0.3s ease;
+   }
+
+   .dashboard-card:hover .card-icon {
+      transform: scale(1.1);
+   }
+
+   .ingresar-link {
+      color: #007bff;
+      font-weight: 500;
+      margin-top: 0.5rem;
+      display: inline-flex;
+      align-items: center;
+      transition: gap 0.3s ease;
+   }
+
+   .dashboard-card.statistics .ingresar-link {
+      color: #0dcaf0;
+   }
+
+   .dashboard-card.reports .ingresar-link {
+      color: #198754;
+   }
+
+   .dashboard-card:hover .ingresar-link i {
+      transform: translateX(3px);
+      transition: transform 0.3s ease;
+   }
+</style>
+
+{% endblock %}
